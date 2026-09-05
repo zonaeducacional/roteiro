@@ -385,6 +385,10 @@
               <svg class="w-3.5 h-3.5 text-[#ffb454]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
               <span>Exportar PDF Cinematográfico</span>
             </button>
+            <button id="menu-export-script-pdf" class="w-full text-left px-3.5 py-2.5 text-[#5ad0dd] font-bold hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer border-b border-white/10" title="Cria documento formatado com os dados da planilha organizados em formato de roteiro técnico">
+              <svg class="w-3.5 h-3.5 text-[#5ad0dd]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>Exportar Roteiro Completo em PDF</span>
+            </button>
             <button id="menu-copy-csv" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#ffb454] flex items-center gap-2 transition-colors cursor-pointer">
               <span>Copiar CSV para Área</span>
             </button>
@@ -442,17 +446,18 @@
     <main class="flex-1 px-6 pb-2 overflow-hidden z-10">
       <div class="w-full h-full border border-white/10 bg-[#131519]/50 rounded-lg overflow-hidden flex flex-col shadow-2xl">
         <div class="overflow-x-auto min-h-[380px]">
-          <table id="shotlist-table" class="w-full border-collapse text-left table-fixed min-w-[1240px]">
+          <table id="shotlist-table" class="w-full border-collapse text-left table-fixed min-w-[1440px]">
             <colgroup>
-              <col style="width: 60px;" />    <!-- # -->
+              <col style="width: 55px;" />    <!-- # -->
               <col style="width: 120px;" />   <!-- Storyboard -->
-              <col style="width: 190px;" />   <!-- Linguagem -->
-              <col style="width: 100px;" />   <!-- Cena -->
-              <col style="width: 320px;" />   <!-- Descrição -->
-              <col style="width: 160px;" />   <!-- Locação -->
-              <col style="width: 140px;" />   <!-- Iluminação -->
-              <col style="width: 130px;" />   <!-- Duração -->
-              <col style="width: 160px;" />   <!-- Trilha -->
+              <col style="width: 185px;" />   <!-- Linguagem -->
+              <col style="width: 95px;" />    <!-- Cena -->
+              <col style="width: 290px;" />   <!-- Descrição -->
+              <col style="width: 150px;" />   <!-- Locação -->
+              <col style="width: 135px;" />   <!-- Iluminação -->
+              <col style="width: 120px;" />   <!-- Duração -->
+              <col style="width: 150px;" />   <!-- Trilha -->
+              <col style="width: 200px;" />   <!-- Notas da Produção -->
               <col style="width: 60px;" />    <!-- Actions -->
             </colgroup>
 
@@ -467,6 +472,7 @@
                 <th class="p-3">Iluminação</th>
                 <th class="p-3 text-[#ffb454]">Duração</th>
                 <th class="p-3">Trilha</th>
+                <th class="p-3 text-[#ffb454]/90">Notas da Produção</th>
                 <th class="p-3 text-center actions-cell">Actions</th>
               </tr>
             </thead>
@@ -501,6 +507,14 @@
         <span class="text-[#ff5a4e] font-bold">REC PISCANDO</span>
       </div>
       <div class="text-[#5d636b]">STATUS: <span id="status-save-text" class="text-[#5ad0dd] uppercase">● SALVO 14:42:01</span></div>
+      
+      <!-- Botão com ícone de estrela 'IA' na barra de status -->
+      <button id="btn-open-ai-modal" type="button" class="flex items-center gap-1.5 px-3 py-1 rounded bg-[#181b21] hover:bg-[#222630] border border-[#ffb454]/40 hover:border-[#ffb454] text-[#ffb454] transition-all cursor-pointer font-bold tracking-wider active:scale-95 shadow-sm" title="Assistente IA - Decupar Cena com Gemini">
+        <svg class="w-3.5 h-3.5 fill-[#ffb454]" viewBox="0 0 24 24">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        <span class="text-[11px]">IA</span>
+      </button>
     </div>
 
     <div class="hidden lg:flex items-center gap-4 text-[#5d636b]">
@@ -556,6 +570,96 @@
         </button>
         <button id="btn-confirm-clear" class="px-4 py-2 rounded bg-film-red hover:bg-film-red-dark text-white font-bold transition-colors cursor-pointer">
           Sim, Limpar Tudo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MODAL ASSISTENTE IA (GEMINI) ═══════ -->
+  <div id="ai-scene-modal" class="fixed inset-0 bg-black/85 z-50 hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+    <div class="bg-[#181b21] border border-[#ffb454]/30 rounded-lg max-w-xl w-full p-6 shadow-2xl relative flex flex-col gap-4 text-[#e9e5da]">
+      <!-- Cabeçalho do Modal -->
+      <div class="flex items-start justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded bg-[#ffb454]/10 border border-[#ffb454]/40 text-[#ffb454] flex items-center justify-center shadow-inner">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-[10px] font-mono tracking-widest text-[#5ad0dd] uppercase">ASSISTENTE CINEMATOGRÁFICO // GEMINI AI</div>
+            <h3 class="font-bebas text-2xl tracking-wider text-[#ffb454] uppercase">Decupar Cena com Inteligência Artificial</h3>
+          </div>
+        </div>
+        <button id="btn-close-ai-modal" class="text-[#5d636b] hover:text-[#ffb454] transition-colors p-1.5 text-xl font-mono cursor-pointer" title="Fechar (ESC)">✕</button>
+      </div>
+
+      <!-- Formulário de Entrada -->
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-1/3">
+            <label for="ai-scene-number" class="block text-[11px] font-mono uppercase text-[#a0a5b0] mb-1">Identificador:</label>
+            <input type="text" id="ai-scene-number" class="w-full bg-[#101216] border border-white/15 focus:border-[#ffb454] rounded px-3 py-1.5 font-mono text-xs text-[#e9e5da] uppercase tracking-wider focus:outline-none" placeholder="CENA 01" value="CENA 01" />
+          </div>
+          <div class="w-2/3">
+            <label class="block text-[11px] font-mono uppercase text-[#a0a5b0] mb-1">Modelo Ativo:</label>
+            <div class="px-3 py-1.5 rounded bg-[#101216] border border-white/10 font-mono text-xs text-[#5ad0dd] flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#5ad0dd] animate-pulse"></span>
+              <span>Gemini 3.8 Flash</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="ai-scene-desc" class="block text-[11px] font-mono uppercase text-[#a0a5b0] mb-1">Descrição da Cena / Ação Dramática:</label>
+          <textarea id="ai-scene-desc" rows="4" class="w-full bg-[#101216] border border-white/15 focus:border-[#ffb454] rounded p-3 font-sans text-xs text-[#e9e5da] placeholder:text-[#5d636b] focus:outline-none transition-colors resize-y leading-relaxed" placeholder="Descreva a ação dramática, personagens ou ideia geral (ex: 'Elena caminha descalça pela plataforma do metrô às 03h da manhã, sob luzes fluorescentes piscando, sentindo passos ao longe...')."></textarea>
+        </div>
+
+        <!-- Barra de Ações & Status 'Gerando...' -->
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center gap-2">
+            <button id="btn-run-ai-generate" type="button" class="flex items-center gap-2 bg-[#ffb454] hover:bg-[#ffaa3b] text-[#0e1013] font-mono font-bold text-xs uppercase px-4 py-2 rounded transition-all active:scale-95 cursor-pointer shadow-md">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>Gerar Texto</span>
+            </button>
+            <button id="btn-cancel-ai-modal" type="button" class="px-3 py-2 rounded bg-[#131519] hover:bg-[#1f232b] border border-white/10 text-xs font-mono text-[#a0a5b0] hover:text-[#e9e5da] transition-colors cursor-pointer">
+              Cancelar
+            </button>
+          </div>
+
+          <!-- Indicador de Status 'Gerando...' -->
+          <div id="ai-status-container" class="hidden items-center gap-2 text-xs font-mono text-[#ffb454] bg-[#ffb454]/10 border border-[#ffb454]/30 px-3 py-1.5 rounded">
+            <svg class="animate-spin w-4 h-4 text-[#ffb454]" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span id="ai-status-text" class="font-bold tracking-wider">Gerando...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caixa de Resultado Gerado -->
+      <div id="ai-result-box" class="hidden flex-col gap-3 pt-3 border-t border-white/10">
+        <div class="flex items-center justify-between">
+          <div class="text-[10px] font-mono tracking-wider uppercase text-[#5ad0dd] font-bold">● Texto Cinematográfico Gerado pelo Gemini:</div>
+          <button id="btn-copy-ai-text" type="button" class="text-[11px] font-mono text-[#ffb454] hover:underline cursor-pointer flex items-center gap-1" title="Copiar texto para área de transferência">
+            <span>📋 Copiar Texto</span>
+          </button>
+        </div>
+
+        <div id="ai-generated-text" class="p-3 bg-[#101216] border border-[#5ad0dd]/30 rounded font-sans text-xs text-[#e9e5da] whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto selection:bg-[#ffb454] selection:text-black"></div>
+
+        <!-- Parâmetros sugeridos (se disponíveis) -->
+        <div id="ai-parameters-preview" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono bg-[#131519] p-2.5 rounded border border-white/5">
+          <div><span class="text-[#5d636b] block">PLANO:</span><span id="ai-sug-plano" class="text-[#ffb454] font-bold">—</span></div>
+          <div><span class="text-[#5d636b] block">ÂNGULO:</span><span id="ai-sug-angulo" class="text-[#e9e5da]">—</span></div>
+          <div><span class="text-[#5d636b] block">MOVIMENTO:</span><span id="ai-sug-mov" class="text-[#e9e5da]">—</span></div>
+          <div><span class="text-[#5d636b] block">LUZ:</span><span id="ai-sug-luz" class="text-[#5ad0dd]">—</span></div>
+        </div>
+
+        <!-- Botão Inserir na Planilha -->
+        <button id="btn-apply-ai-result" type="button" class="w-full flex items-center justify-center gap-2 bg-[#5ad0dd] hover:bg-[#4ac0cd] text-[#0e1013] font-mono font-bold text-xs uppercase py-2.5 px-4 rounded transition-all active:scale-95 cursor-pointer shadow-md">
+          <span>＋ Inserir como Novo Plano na Planilha</span>
         </button>
       </div>
     </div>
@@ -724,6 +828,7 @@
             luz: 'Neon & Práticos urbanos',
             duracao: 4.5,
             trilha: 'Drone grave contínuo + gotejar metálico',
+            notas: 'Autorização com segurança do metrô para gravação após fechamento às 00h. Levar gerador portátil.',
             thumb: ''
           },
           {
@@ -737,6 +842,7 @@
             luz: 'Mista (Ambiente + Práticos)',
             duracao: 3.5,
             trilha: 'Contrabaixo tenso sincopado',
+            notas: 'Figurino: Capa de chuva molhada extra para continuidade. Microfone de lapela sem fio.',
             thumb: ''
           },
           {
@@ -750,6 +856,7 @@
             luz: 'Contraluz / Silhueta',
             duracao: 2.5,
             trilha: 'Ruído de freios pneumáticos e apito',
+            notas: 'Efeito prático de fumaça leve para os feixes volumétricos de luz. Dublê a postos na faixa amarela.',
             thumb: ''
           },
           {
@@ -763,6 +870,7 @@
             luz: 'Low-Key (Contraste alto)',
             duracao: 2.0,
             trilha: 'Sinal sonoro de fechamento das portas',
+            notas: 'Adereços: 10 cópias idênticas do bilhete dobrado para repetição de takes.',
             thumb: ''
           }
         ]
@@ -825,6 +933,9 @@
             const parsed = JSON.parse(raw);
             if (parsed && Array.isArray(parsed.rows)) {
               appState = parsed;
+              appState.rows.forEach(r => {
+                if (r.notas === undefined) r.notas = '';
+              });
               return;
             }
           }
@@ -1057,7 +1168,7 @@
           const matchScene = (currentSceneFilter === 'TODAS') || (row.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
           if (!matchScene) return false;
           if (!query) return true;
-          const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz}`.toLowerCase();
+          const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz} ${row.notas || ''}`.toLowerCase();
           return hay.includes(query);
         });
 
@@ -1341,7 +1452,28 @@
           inputTrilha.onkeydown = (e) => handleKeyNavigation(e, originalIndex);
           tdTrilha.appendChild(inputTrilha);
 
-          // ── 10. AÇÕES (DUPLICAR E EXCLUIR NO HOVER) ──
+          // ── 10. NOTAS DA PRODUÇÃO / COMENTÁRIOS ──
+          const tdNotas = document.createElement('td');
+          tdNotas.className = 'py-2 px-3 align-top';
+          const txtNotas = document.createElement('textarea');
+          txtNotas.rows = 2;
+          txtNotas.className = 'sheet-input font-barlow text-[12px] px-2 py-1 leading-snug resize-none overflow-hidden placeholder-film-muted/40 text-[#ffb454]/90';
+          txtNotas.placeholder = 'Observações técnicas, figurino, elenco...';
+          txtNotas.value = row.notas || '';
+
+          function autoResizeNotas() {
+            txtNotas.style.height = 'auto';
+            txtNotas.style.height = (txtNotas.scrollHeight) + 'px';
+          }
+          txtNotas.oninput = (e) => {
+            row.notas = e.target.value;
+            autoResizeNotas();
+            triggerAutosave();
+          };
+          setTimeout(autoResizeNotas, 0);
+          tdNotas.appendChild(txtNotas);
+
+          // ── 11. AÇÕES (DUPLICAR E EXCLUIR NO HOVER) ──
           const tdActions = document.createElement('td');
           tdActions.className = 'py-2 px-1 text-center align-middle actions-cell select-none';
           tdActions.innerHTML = `
@@ -1368,6 +1500,7 @@
           tr.appendChild(tdLuz);
           tr.appendChild(tdDur);
           tr.appendChild(tdTrilha);
+          tr.appendChild(tdNotas);
           tr.appendChild(tdActions);
 
           tbody.appendChild(tr);
@@ -1517,6 +1650,7 @@
           luz: 'Natural Dia (Direta)',
           duracao: 3.0,
           trilha: '',
+          notas: '',
           thumb: ''
         };
 
@@ -1640,7 +1774,8 @@
           'Iluminação',
           'Duração (s)',
           'Duração (h:m:s)',
-          'Trilha Sonora / Áudio'
+          'Trilha Sonora / Áudio',
+          'Notas da Produção / Comentários'
         ];
 
         const escapeCSV = (str) => {
@@ -1673,7 +1808,8 @@
             r.luz,
             durSec.toString().replace('.', ','),
             durTC,
-            r.trilha
+            r.trilha,
+            r.notas || ''
           ];
           lines.push(rowData.map(escapeCSV).join(';'));
         });
@@ -1774,7 +1910,7 @@
             const matchScene = (currentSceneFilter === 'TODAS') || (row.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
             if (!matchScene) return false;
             if (!query) return true;
-            const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz}`.toLowerCase();
+            const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz} ${row.notas || ''}`.toLowerCase();
             return hay.includes(query);
           });
 
@@ -1851,7 +1987,7 @@
 
           // ── MONTAGEM DAS LINHAS DA TABELA ──
           const head = [
-            ['Nº', 'STORYBOARD', 'LINGUAGEM / CÂMERA', 'CENA', 'DESCRIÇÃO DA CENA & AÇÃO', 'LOCAÇÃO', 'LUZ', 'DURAÇÃO / TC', 'TRILHA / ÁUDIO']
+            ['Nº', 'STORYBOARD', 'LINGUAGEM / CÂMERA', 'CENA', 'DESCRIÇÃO DA CENA & AÇÃO', 'LOCAÇÃO', 'LUZ', 'DURAÇÃO / TC', 'TRILHA / ÁUDIO', 'NOTAS DA PRODUÇÃO']
           ];
 
           const body = filteredRows.map((row) => {
@@ -1880,7 +2016,8 @@
               row.locacao || '—',
               row.luz || '—',
               durText,
-              row.trilha || '—'
+              row.trilha || '—',
+              row.notas || '—'
             ];
 
             // Anexa a imagem para a renderização da célula correspondente
@@ -1918,15 +2055,16 @@
               fillColor: [24, 27, 33]      // #181b21
             },
             columnStyles: {
-              0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [255, 180, 84] }, // Nº
-              1: { cellWidth: 26, halign: 'center', minCellHeight: 18 },                             // Storyboard
-              2: { cellWidth: 38, fontSize: 6.5 },                                                    // Câmera
-              3: { cellWidth: 18, fontStyle: 'bold', textColor: [90, 208, 221] },                   // Cena
-              4: { cellWidth: 70, fontSize: 7 },                                                      // Descrição
-              5: { cellWidth: 32, fontSize: 6.5 },                                                    // Locação
-              6: { cellWidth: 26, fontSize: 6.5 },                                                    // Luz
-              7: { cellWidth: 27, halign: 'right', fontStyle: 'bold', textColor: [255, 180, 84], fontSize: 6.5 }, // Duração / TC
-              8: { cellWidth: 28, fontSize: 6.5 }                                                     // Trilha
+              0: { cellWidth: 10, halign: 'center', fontStyle: 'bold', textColor: [255, 180, 84] }, // Nº
+              1: { cellWidth: 24, halign: 'center', minCellHeight: 18 },                             // Storyboard
+              2: { cellWidth: 34, fontSize: 6.5 },                                                    // Câmera
+              3: { cellWidth: 16, fontStyle: 'bold', textColor: [90, 208, 221] },                   // Cena
+              4: { cellWidth: 56, fontSize: 7 },                                                      // Descrição
+              5: { cellWidth: 28, fontSize: 6.5 },                                                    // Locação
+              6: { cellWidth: 24, fontSize: 6.5 },                                                    // Luz
+              7: { cellWidth: 26, halign: 'right', fontStyle: 'bold', textColor: [255, 180, 84], fontSize: 6.5 }, // Duração / TC
+              8: { cellWidth: 27, fontSize: 6.5 },                                                    // Trilha
+              9: { cellWidth: 32, fontSize: 6.5, textColor: [255, 180, 84] }                         // Notas da Produção
             },
             didDrawCell: function(data) {
               if (data.column.index === 1 && data.cell.section === 'body') {
@@ -2017,6 +2155,337 @@
         }
       }
 
+      // ─── EXPORTAÇÃO DO ROTEIRO COMPLETO EM PDF (FORMATO ROTEIRO TÉCNICO) ───
+      async function exportCompleteScriptPDF() {
+        showToast('Preparando Roteiro Técnico Completo em PDF...', 'info');
+
+        const isLoaded = await ensureJsPDFLoaded();
+        if (!isLoaded || !window.jspdf || !window.jspdf.jsPDF) {
+          showToast('Não foi possível inicializar o jsPDF. Verifique sua conexão de rede.', 'error');
+          return;
+        }
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+          });
+
+          const projectTitle = (appState.meta.titulo || 'ROTEIRO TÉCNICO').toUpperCase();
+          const projectDate = appState.meta.data || new Date().toISOString().split('T')[0];
+          const totalShots = appState.rows.length;
+          const uniqueScenes = new Set(appState.rows.map(r => r.cena.trim().toUpperCase()).filter(Boolean)).size;
+          const totalDurationSec = appState.rows.reduce((acc, r) => acc + (parseFloat(r.duracao) || 0), 0);
+          const times = calculateCumulativeTimecodes();
+
+          // Filtro ativo
+          const query = currentSearchQuery.toLowerCase().trim();
+          const filteredRows = appState.rows.filter(row => {
+            const matchScene = (currentSceneFilter === 'TODAS') || (row.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
+            if (!matchScene) return false;
+            if (!query) return true;
+            const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz} ${row.notas || ''}`.toLowerCase();
+            return hay.includes(query);
+          });
+
+          if (filteredRows.length === 0) {
+            showToast('Nenhum plano para exportar com os filtros atuais.', 'error');
+            return;
+          }
+
+          // ── CABEÇALHO DE ROTEIRO TÉCNICO NA PRIMEIRA PÁGINA (CLAQUETE & SLATE DE DIREÇÃO) ──
+          // Faixa de claquete superior com listras diagonais pretas e teal
+          const stripeWidth = 12;
+          const stripeHeight = 4.5;
+          for (let x = 0; x < 297; x += stripeWidth) {
+            const isTeal = Math.floor(x / stripeWidth) % 2 === 0;
+            doc.setFillColor(isTeal ? 90 : 14, isTeal ? 208 : 16, isTeal ? 221 : 19);
+            doc.rect(x, 0, stripeWidth, stripeHeight, 'F');
+          }
+
+          // Linha de acento teal
+          doc.setFillColor(90, 208, 221);
+          doc.rect(0, stripeHeight, 297, 0.6, 'F');
+
+          // Bloco principal de slate técnico de direção
+          doc.setFillColor(19, 21, 25); // #131519
+          doc.rect(10, 7, 277, 24, 'F');
+
+          // Borda do Slate
+          doc.setDrawColor(45, 49, 56);
+          doc.setLineWidth(0.3);
+          doc.rect(10, 7, 277, 24, 'S');
+
+          // Borda de acento teal à esquerda
+          doc.setFillColor(90, 208, 221);
+          doc.rect(10, 7, 2.5, 24, 'F');
+
+          // Título do Roteiro
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(15);
+          doc.setTextColor(90, 208, 221); // #5ad0dd
+          doc.text(`ROTEIRO TÉCNICO COMPLETO // ${projectTitle}`, 16, 16);
+
+          // Subtítulo técnico
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(255, 180, 84); // #ffb454
+          const filterInfo = currentSceneFilter !== 'TODAS' ? ` | CENA FILTRADA: ${currentSceneFilter}` : ' | DECOUPAGE INTEGRAL (TODAS AS CENAS)';
+          doc.text(`DECOUPAGE & SHOOTING SCRIPT · DOCUMENTO OFICIAL DE DIREÇÃO E PRODUÇÃO${filterInfo}`, 16, 22);
+
+          doc.setFontSize(6.5);
+          doc.setTextColor(150, 155, 165);
+          doc.text('PADRÃO TÉCNICO A4 LANDSCAPE // AGRUPAMENTO POR CENAS // AUDIOVISUAL CINEMA & TV', 16, 27);
+
+          // Metadados do lado direito
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(150, 155, 165);
+          doc.text('DATA:', 180, 14);
+          doc.text('PLANOS:', 180, 19);
+          doc.text('CENAS:', 180, 24);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(233, 229, 218);
+          doc.text(projectDate, 202, 14);
+          doc.text(`${filteredRows.length} de ${totalShots}`, 202, 19);
+          doc.text(`${uniqueScenes}`, 202, 24);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(150, 155, 165);
+          doc.text('DURAÇÃO TOTAL:', 228, 14);
+          doc.text('STATUS:', 228, 24);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 180, 84);
+          doc.text(`${formatSecondsToTimecode(totalDurationSec)} (${formatSecondsToHMin(totalDurationSec)})`, 228, 19);
+
+          doc.setTextColor(90, 208, 221);
+          doc.text('● SHOOTING SCRIPT', 246, 24);
+
+          // ── MONTAGEM DO CORPO DO ROTEIRO AGRUPADO POR CENA ──
+          const scenesMap = new Map();
+          filteredRows.forEach((row) => {
+            const sceneKey = (row.cena || 'CENA 01').trim().toUpperCase();
+            if (!scenesMap.has(sceneKey)) {
+              scenesMap.set(sceneKey, []);
+            }
+            scenesMap.get(sceneKey).push(row);
+          });
+
+          const tableHead = [
+            ['PLANO & CÂMERA', 'STORYBOARD (16:9)', 'VÍDEO / AÇÃO NARRATIVA', 'ÁUDIO / TRILHA & RUÍDOS', 'NOTAS DA PRODUÇÃO & TÉCNICA']
+          ];
+
+          const tableBody = [];
+
+          scenesMap.forEach((sceneRows, sceneName) => {
+            const sceneDuration = sceneRows.reduce((acc, r) => acc + (parseFloat(r.duracao) || 0), 0);
+            const loc = sceneRows.find(r => r.locacao && r.locacao.trim())?.locacao.trim() || 'LOCAÇÃO A DEFINIR';
+            const luz = sceneRows.find(r => r.luz && r.luz.trim())?.luz.trim() || 'LUZ A DEFINIR';
+
+            // Linha de Cabeçalho da Cena (Banner de Roteiro Técnico)
+            tableBody.push([
+              {
+                content: `🎬  ${sceneName}   —   LOCAÇÃO: ${loc.toUpperCase()}   //   ILUMINAÇÃO: ${luz.toUpperCase()}   [ ${sceneRows.length} PLANO${sceneRows.length > 1 ? 'S' : ''}  ·  TEMPO ESTIMADO: ${formatSecondsToTimecode(sceneDuration)} (${formatSecondsToHMin(sceneDuration)}) ]`,
+                colSpan: 5,
+                styles: {
+                  fillColor: [12, 24, 30],
+                  textColor: [90, 208, 221],
+                  fontStyle: 'bold',
+                  fontSize: 7.5,
+                  cellPadding: { top: 3.5, bottom: 3.5, left: 3, right: 3 },
+                  lineColor: [90, 208, 221],
+                  lineWidth: 0.25
+                }
+              }
+            ]);
+
+            // Planos da Cena
+            sceneRows.forEach((row) => {
+              const origIndex = appState.rows.findIndex(r => r.id === row.id);
+              const timeData = times[origIndex] || { inTC: '00:00:00', outTC: '00:00:00' };
+              const shotNumber = String(origIndex + 1).padStart(3, '0');
+
+              const cameraSpecs = [
+                `PLANO ${shotNumber}`,
+                `PLAN: ${row.plano || '—'}`,
+                `ÂNG:  ${row.angulo || '—'}`,
+                `MOV:  ${row.movimento || '—'}`,
+                `DUR:  ${parseFloat(row.duracao || 0).toFixed(1)}s`,
+                `TC:   ${timeData.inTC} ▸ ${timeData.outTC}`
+              ].join('\n');
+
+              const desc = row.descricao && row.descricao.trim() ? row.descricao.trim() : '—';
+              const audio = row.trilha && row.trilha.trim() ? row.trilha.trim() : '—';
+              const notas = row.notas && row.notas.trim() ? row.notas.trim() : '—';
+
+              const shotRow = [
+                {
+                  content: cameraSpecs,
+                  styles: { fontSize: 6.5, textColor: [233, 229, 218], fontStyle: 'normal' }
+                },
+                {
+                  content: '', // Renderizado no didDrawCell
+                  _thumb: row.thumb,
+                  _isStoryboard: true,
+                  styles: { minCellHeight: 22 }
+                },
+                {
+                  content: desc,
+                  styles: { fontSize: 7, textColor: [240, 237, 230], lineHeight: 1.25 }
+                },
+                {
+                  content: audio,
+                  styles: { fontSize: 6.5, textColor: [200, 210, 220] }
+                },
+                {
+                  content: notas,
+                  styles: { fontSize: 6.5, textColor: [255, 180, 84] }
+                }
+              ];
+
+              tableBody.push(shotRow);
+            });
+          });
+
+          const tableOptions = {
+            startY: 34,
+            head: tableHead,
+            body: tableBody,
+            margin: { left: 10, right: 10, top: 10, bottom: 12 },
+            theme: 'plain',
+            styles: {
+              font: 'helvetica',
+              fontSize: 7,
+              cellPadding: { top: 2.5, right: 2.5, bottom: 2.5, left: 2.5 },
+              textColor: [233, 229, 218],
+              fillColor: [19, 21, 25],
+              lineColor: [35, 38, 45],
+              lineWidth: 0.15,
+              valign: 'middle',
+              overflow: 'linebreak'
+            },
+            headStyles: {
+              fillColor: [10, 14, 18],
+              textColor: [90, 208, 221],
+              fontStyle: 'bold',
+              fontSize: 7.5,
+              halign: 'left',
+              lineWidth: 0.25,
+              lineColor: [90, 208, 221]
+            },
+            alternateRowStyles: {
+              fillColor: [24, 27, 33]
+            },
+            columnStyles: {
+              0: { cellWidth: 40, fontSize: 6.5, fontStyle: 'normal' },
+              1: { cellWidth: 36, halign: 'center', minCellHeight: 22 },
+              2: { cellWidth: 84, fontSize: 7 },
+              3: { cellWidth: 55, fontSize: 6.5 },
+              4: { cellWidth: 62, fontSize: 6.5, textColor: [255, 180, 84] }
+            },
+            didDrawCell: function(data) {
+              if (data.column.index === 1 && data.cell.section === 'body') {
+                if (data.cell.colSpan && data.cell.colSpan > 1) return;
+                const rowRaw = data.row.raw;
+                if (!Array.isArray(rowRaw) || rowRaw.length < 2) return;
+
+                const cellObj = rowRaw[1];
+                const thumb = cellObj && cellObj._thumb;
+                const cell = data.cell;
+
+                if (thumb && typeof thumb === 'string' && thumb.startsWith('data:image')) {
+                  try {
+                    const imgW = 30;
+                    const imgH = 16.875; // Proporção ~16:9
+                    const imgX = cell.x + (cell.width - imgW) / 2;
+                    const imgY = cell.y + (cell.height - imgH) / 2;
+
+                    // Moldura técnica teal
+                    doc.setDrawColor(90, 208, 221);
+                    doc.setLineWidth(0.3);
+                    doc.rect(imgX - 0.4, imgY - 0.4, imgW + 0.8, imgH + 0.8, 'S');
+
+                    doc.addImage(thumb, 'JPEG', imgX, imgY, imgW, imgH, undefined, 'FAST');
+                  } catch (err) {
+                    console.warn('Erro ao desenhar thumbnail no roteiro:', err);
+                  }
+                } else {
+                  // Placeholder de Storyboard 16:9
+                  const boxW = 28;
+                  const boxH = 15.75;
+                  const boxX = cell.x + (cell.width - boxW) / 2;
+                  const boxY = cell.y + (cell.height - boxH) / 2;
+
+                  doc.setDrawColor(45, 50, 60);
+                  doc.setFillColor(14, 16, 20);
+                  doc.setLineWidth(0.25);
+                  doc.rect(boxX, boxY, boxW, boxH, 'FD');
+
+                  // Crosshair cinematográfico sutil
+                  doc.setDrawColor(40, 46, 56);
+                  doc.setLineWidth(0.2);
+                  doc.line(boxX + boxW / 2 - 3, boxY + boxH / 2, boxX + boxW / 2 + 3, boxY + boxH / 2);
+                  doc.line(boxX + boxW / 2, boxY + boxH / 2 - 3, boxX + boxW / 2, boxY + boxH / 2 + 3);
+
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(5.5);
+                  doc.setTextColor(93, 99, 107);
+                  doc.text('QUADRO 16:9', cell.x + cell.width / 2, cell.y + cell.height / 2 + 5, { align: 'center' });
+                }
+              }
+            },
+            didDrawPage: function(data) {
+              const pageCount = doc.internal.getNumberOfPages();
+              const pageCurrent = data.pageNumber;
+              const pageH = doc.internal.pageSize.height;
+              const pageW = doc.internal.pageSize.width;
+
+              // Barra técnica inferior
+              doc.setDrawColor(45, 49, 56);
+              doc.setLineWidth(0.25);
+              doc.line(10, pageH - 9, pageW - 10, pageH - 9);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(6.5);
+              doc.setTextColor(90, 208, 221); // Teal
+              doc.text('● ROTEIRO TÉCNICO', 10, pageH - 5);
+
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(110, 115, 125);
+              doc.text(`SHOOTING SCRIPT // ${projectTitle} // GUIA OFICIAL DE FILMAGEM`, 42, pageH - 5);
+
+              doc.setTextColor(255, 180, 84);
+              doc.text(`DURAÇÃO TOTAL: ${formatSecondsToTimecode(totalDurationSec)}`, 170, pageH - 5);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(90, 208, 221);
+              doc.text(`PÁGINA ${pageCurrent} DE ${pageCount}`, pageW - 10, pageH - 5, { align: 'right' });
+            }
+          };
+
+          if (typeof doc.autoTable === 'function') {
+            doc.autoTable(tableOptions);
+          } else if (typeof window.jspdf.autoTable === 'function') {
+            window.jspdf.autoTable(doc, tableOptions);
+          } else {
+            throw new Error('Plugin jsPDF-AutoTable não foi carregado corretamente.');
+          }
+
+          const safeTitle = (appState.meta.titulo || 'roteiro_tecnico').toLowerCase().replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_');
+          const filename = `${safeTitle}_roteiro_tecnico_completo.pdf`;
+          doc.save(filename);
+          showToast(`Roteiro técnico "${filename}" gerado com sucesso!`, 'success');
+        } catch (err) {
+          console.error('Erro na exportação de Roteiro Técnico:', err);
+          showToast(`Erro ao gerar Roteiro Técnico: ${err.message}`, 'error');
+        }
+      }
+
       // ─── EXPORTAÇÃO E IMPORTAÇÃO JSON ───
       function downloadJSON() {
         const dataStr = JSON.stringify(appState, null, 2);
@@ -2058,6 +2527,7 @@
               luz: r.luz || OPTIONS_LUZ[0],
               duracao: parseFloat(r.duracao) || 3.0,
               trilha: r.trilha || '',
+              notas: r.notas || '',
               thumb: r.thumb || ''
             }));
 
@@ -2102,6 +2572,181 @@
         renderTable();
         closeClearModal();
         showToast('Planilha limpa.', 'info');
+      }
+
+      // ─── ASSISTENTE IA (GEMINI) ───
+      let latestAiResult = null;
+
+      function openAiModal() {
+        const modal = document.getElementById('ai-scene-modal');
+        if (!modal) return;
+
+        // Pré-preenche número da cena com base no filtro atual ou na última linha
+        const sceneNumInput = document.getElementById('ai-scene-number');
+        if (sceneNumInput) {
+          if (currentSceneFilter && currentSceneFilter !== 'TODAS') {
+            sceneNumInput.value = currentSceneFilter.toUpperCase();
+          } else if (appState.rows.length > 0) {
+            sceneNumInput.value = (appState.rows[appState.rows.length - 1].cena || 'CENA 01').toUpperCase();
+          } else {
+            sceneNumInput.value = 'CENA 01';
+          }
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        const descInput = document.getElementById('ai-scene-desc');
+        if (descInput) {
+          setTimeout(() => descInput.focus(), 80);
+        }
+      }
+
+      function closeAiModal() {
+        const modal = document.getElementById('ai-scene-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+        const statusContainer = document.getElementById('ai-status-container');
+        if (statusContainer) {
+          statusContainer.classList.add('hidden');
+          statusContainer.classList.remove('flex');
+        }
+      }
+
+      async function generateSceneWithGemini() {
+        const descInput = document.getElementById('ai-scene-desc');
+        const sceneInput = document.getElementById('ai-scene-number');
+        const statusContainer = document.getElementById('ai-status-container');
+        const statusText = document.getElementById('ai-status-text');
+        const generateBtn = document.getElementById('btn-run-ai-generate');
+        const resultBox = document.getElementById('ai-result-box');
+        const generatedTextEl = document.getElementById('ai-generated-text');
+        const previewParams = document.getElementById('ai-parameters-preview');
+
+        const description = descInput ? descInput.value.trim() : '';
+        if (!description) {
+          showToast('Digite a descrição ou ação dramática da cena.', 'error');
+          if (descInput) descInput.focus();
+          return;
+        }
+
+        // Exibe o status 'Gerando...' enquanto a resposta é aguardada
+        if (statusContainer) {
+          statusContainer.classList.remove('hidden');
+          statusContainer.classList.add('flex');
+        }
+        if (statusText) statusText.textContent = 'Gerando...';
+
+        if (generateBtn) {
+          generateBtn.disabled = true;
+          generateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        if (resultBox) {
+          resultBox.classList.add('hidden');
+        }
+
+        try {
+          const response = await fetch('/api/generate-scene', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              description,
+              sceneNumber: sceneInput ? sceneInput.value.trim() : ''
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Falha ao processar com a API do Gemini.');
+          }
+
+          latestAiResult = data;
+
+          if (generatedTextEl) {
+            generatedTextEl.textContent = data.texto || '';
+          }
+
+          if (previewParams && data.sugestoes) {
+            previewParams.classList.remove('hidden');
+            previewParams.classList.add('grid');
+            const s = data.sugestoes;
+            const elPlano = document.getElementById('ai-sug-plano');
+            const elAng = document.getElementById('ai-sug-angulo');
+            const elMov = document.getElementById('ai-sug-mov');
+            const elLuz = document.getElementById('ai-sug-luz');
+            if (elPlano) elPlano.textContent = s.plano || '—';
+            if (elAng) elAng.textContent = s.angulo || '—';
+            if (elMov) elMov.textContent = s.movimento || '—';
+            if (elLuz) elLuz.textContent = s.luz || '—';
+          } else if (previewParams) {
+            previewParams.classList.add('hidden');
+          }
+
+          if (resultBox) {
+            resultBox.classList.remove('hidden');
+            resultBox.classList.add('flex');
+          }
+
+          showToast('Decupagem gerada com sucesso pelo Gemini!', 'success');
+        } catch (err) {
+          console.error('Erro na geração com Gemini:', err);
+          showToast(`Erro na IA: ${err.message}`, 'error');
+        } finally {
+          if (statusContainer) {
+            statusContainer.classList.add('hidden');
+            statusContainer.classList.remove('flex');
+          }
+          if (generateBtn) {
+            generateBtn.disabled = false;
+            generateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          }
+        }
+      }
+
+      function copyAiGeneratedText() {
+        const textEl = document.getElementById('ai-generated-text');
+        if (!textEl || !textEl.textContent) return;
+
+        navigator.clipboard.writeText(textEl.textContent).then(() => {
+          showToast('Texto copiado com sucesso!', 'success');
+        }).catch(() => {
+          showToast('Não foi possível copiar o texto.', 'error');
+        });
+      }
+
+      function applyAiResultToSheet() {
+        if (!latestAiResult) return;
+        const sug = latestAiResult.sugestoes;
+        const text = latestAiResult.texto;
+
+        const newRow = {
+          id: generateId(),
+          cena: (sug && sug.cena) || 'CENA 01',
+          plano: (sug && sug.plano) || OPTIONS_PLANO[0],
+          angulo: (sug && sug.angulo) || OPTIONS_ANGULO[0],
+          movimento: (sug && sug.movimento) || OPTIONS_MOVIMENTO[0],
+          descricao: (sug && sug.descricao) || text,
+          locacao: (sug && sug.locacao) || '',
+          luz: (sug && sug.luz) || OPTIONS_LUZ[0],
+          duracao: (sug && sug.duracao) ? Number(sug.duracao) : 4.0,
+          trilha: (sug && sug.trilha) || '',
+          notas: (sug && sug.notas) || '',
+          thumb: ''
+        };
+
+        appState.rows.push(newRow);
+        triggerAutosave();
+        renderTable();
+        closeAiModal();
+        showToast('Novo plano gerado pela IA inserido na planilha!', 'success');
+
+        setTimeout(() => {
+          const container = document.getElementById('table-scroll-container');
+          if (container) container.scrollTop = container.scrollHeight;
+        }, 120);
       }
 
       // ─── INICIALIZAÇÃO E EVENTOS GLOBAIS ───
@@ -2156,6 +2801,7 @@
         // 4. Menu Suspenso de Exportação e Botão Direto de PDF
         document.getElementById('btn-quick-pdf')?.addEventListener('click', exportCinematicPDF);
         document.getElementById('menu-export-pdf')?.addEventListener('click', exportCinematicPDF);
+        document.getElementById('menu-export-script-pdf')?.addEventListener('click', exportCompleteScriptPDF);
 
         const btnExportDropdown = document.getElementById('btn-export-dropdown');
         const exportMenu = document.getElementById('export-dropdown-menu');
@@ -2212,6 +2858,17 @@
         document.getElementById('btn-open-clear-modal')?.addEventListener('click', openClearModal);
         document.getElementById('btn-cancel-clear')?.addEventListener('click', closeClearModal);
         document.getElementById('btn-confirm-clear')?.addEventListener('click', confirmClearAll);
+
+        // 6.1 Assistente IA (Gemini)
+        document.getElementById('btn-open-ai-modal')?.addEventListener('click', openAiModal);
+        document.getElementById('btn-close-ai-modal')?.addEventListener('click', closeAiModal);
+        document.getElementById('btn-cancel-ai-modal')?.addEventListener('click', closeAiModal);
+        document.getElementById('btn-run-ai-generate')?.addEventListener('click', generateSceneWithGemini);
+        document.getElementById('btn-copy-ai-text')?.addEventListener('click', copyAiGeneratedText);
+        document.getElementById('btn-apply-ai-result')?.addEventListener('click', applyAiResultToSheet);
+        document.getElementById('ai-scene-modal')?.addEventListener('click', (e) => {
+          if (e.target.id === 'ai-scene-modal') closeAiModal();
+        });
 
         // 7. Lightbox
         document.getElementById('btn-close-lightbox')?.addEventListener('click', closeLightbox);
@@ -2273,7 +2930,12 @@
           if (e.key === 'Escape') {
             const lightbox = document.getElementById('lightbox-modal');
             const clearModal = document.getElementById('clear-modal');
+            const aiModal = document.getElementById('ai-scene-modal');
 
+            if (aiModal && !aiModal.classList.contains('hidden')) {
+              closeAiModal();
+              return;
+            }
             if (lightbox && !lightbox.classList.contains('hidden')) {
               closeLightbox();
               return;
