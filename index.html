@@ -1,0 +1,2321 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planilha de Decupagem — Shot List &amp; Storyboard</title>
+  <meta name="description" content="Planilha de decupagem e shot list para roteiros de filmagem com estética cinematográfica de claquete e sala de edição." />
+  <meta property="og:title" content="Planilha de Decupagem — Shot List &amp; Storyboard" />
+  <meta property="og:description" content="Planilha de decupagem e shot list para roteiros de filmagem com estética cinematográfica de claquete e sala de edição." />
+  <meta property="og:type" content="website" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Bebas+Neue&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jsPDF & jsPDF-AutoTable CDN para Exportação Cinematográfica -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            film: {
+              black: '#0e1013',
+              panel: '#131519',
+              card: '#181b21',
+              border: 'rgba(255, 255, 255, 0.09)',
+              'border-subtle': 'rgba(255, 255, 255, 0.05)',
+              text: '#e9e5da',
+              muted: '#5d636b',
+              amber: '#ffb454',
+              'amber-dark': '#d48a2c',
+              teal: '#5ad0dd',
+              'teal-dark': '#2ca3b0',
+              red: '#ff5a4e',
+              'red-dark': '#d63a2f'
+            }
+          },
+          fontFamily: {
+            bebas: ['"Bebas Neue"', 'sans-serif'],
+            barlow: ['"Barlow"', 'sans-serif'],
+            mono: ['"IBM Plex Mono"', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Estética de Sala de Edição & Claquete */
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #0e1013;
+      color: #e9e5da;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: radial-gradient(circle at 80% 20%, rgba(255, 180, 84, 0.07) 0%, transparent 40%), radial-gradient(circle at 20% 80%, rgba(90, 208, 221, 0.06) 0%, transparent 40%), #0e1013;
+    }
+
+    /* Barra Superior Claquete (Clapperboard Stripes) */
+    .clapper-stripes {
+      height: 16px;
+      background: repeating-linear-gradient(
+        45deg,
+        #000,
+        #000 20px,
+        #ffb454 20px,
+        #ffb454 40px
+      );
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Grão de Filme e Vinheta */
+    .vignette-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(circle, transparent 50%, rgba(0, 0, 0, 0.5) 100%);
+      opacity: 0.6;
+    }
+
+    /* Piscar do Indicador REC */
+    @keyframes recPulse {
+      0%, 100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 6px rgba(255, 90, 78, 0.85));
+      }
+      50% {
+        opacity: 0.2;
+        filter: none;
+      }
+    }
+    .rec-blinking {
+      animation: recPulse 1.2s infinite ease-in-out;
+    }
+
+    /* Animação Flash ao Criar Linha */
+    @keyframes rowCreationFlash {
+      0% {
+        background-color: rgba(255, 180, 84, 0.35);
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+    .animate-flash {
+      animation: rowCreationFlash 1s ease-out;
+    }
+
+    /* Scrollbar Personalizada */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0e1013;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252a33;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ffb454;
+    }
+
+    /* Linhas e Células */
+    tr.film-row {
+      transition: background-color 0.15s ease;
+    }
+    tr.film-row:hover {
+      background-color: rgba(255, 180, 84, 0.045);
+    }
+    tr.film-row:focus-within {
+      background-color: rgba(255, 180, 84, 0.035);
+    }
+
+    /* Indicador Drag and Drop */
+    tr.drag-over-top td {
+      border-top: 2px solid #ffb454 !important;
+    }
+    tr.drag-over-bottom td {
+      border-bottom: 2px solid #ffb454 !important;
+    }
+    tr.is-dragging {
+      opacity: 0.35;
+      background-color: rgba(255, 180, 84, 0.1) !important;
+    }
+
+    /* Estilo de Inputs e Selects na Tabela */
+    .sheet-input {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #e9e5da;
+      transition: all 0.15s ease;
+      width: 100%;
+      border-radius: 4px;
+    }
+    .sheet-input:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+    .sheet-input:focus {
+      outline: none;
+      border-color: #ffb454;
+      background-color: #16181d;
+      box-shadow: 0 0 0 1px #ffb454;
+    }
+
+    .sheet-select {
+      background-color: #121418;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #d1d5db;
+      font-size: 11px;
+      line-height: 1.2;
+      padding: 3px 6px;
+      border-radius: 3px;
+      width: 100%;
+      transition: all 0.15s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888888'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 4px center;
+      background-size: 10px;
+      padding-right: 18px;
+    }
+    .sheet-select:hover {
+      border-color: rgba(255, 180, 84, 0.4);
+      color: #fff;
+    }
+    .sheet-select:focus {
+      outline: none;
+      border-color: #ffb454;
+      box-shadow: 0 0 0 1px #ffb454;
+      color: #ffb454;
+    }
+
+    /* Tooltip / Badges */
+    .film-frame-border {
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background-color: #0c0d10;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        background-image: none !important;
+      }
+      .no-print,
+      .film-sprockets-left,
+      .film-sprockets-right,
+      .film-grain,
+      .vignette-overlay,
+      #bottom-status-bar,
+      #toolbar-section,
+      #scene-filter-bar,
+      .actions-cell,
+      .drag-handle {
+        display: none !important;
+      }
+      .print-only-title {
+        display: block !important;
+        color: #000000 !important;
+        margin-bottom: 12px;
+      }
+      table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+      }
+      th, td {
+        border: 1px solid #444444 !important;
+        color: #111111 !important;
+        background: transparent !important;
+        padding: 6px !important;
+      }
+      th {
+        background-color: #eeeeee !important;
+        font-weight: bold;
+      }
+      .sheet-input, .sheet-select, textarea {
+        color: #000000 !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        resize: none !important;
+      }
+      .film-frame-border img {
+        max-height: 60px !important;
+        object-fit: cover !important;
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen w-full bg-[#0e1013] text-[#e9e5da] font-sans overflow-x-hidden relative select-none" style="background: radial-gradient(circle at 80% 20%, rgba(255, 180, 84, 0.07) 0%, transparent 40%), radial-gradient(circle at 20% 80%, rgba(90, 208, 221, 0.06) 0%, transparent 40%), #0e1013;">
+
+  <div class="fixed inset-0 pointer-events-none z-0" style="background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.5) 100%); opacity: 0.6;"></div>
+
+  <!-- Barra Superior Claquete -->
+  <div class="h-4 w-full relative overflow-hidden flex z-20 no-print" style="background: repeating-linear-gradient(45deg, #000, #000 20px, #ffb454 20px, #ffb454 40px);"></div>
+
+  <!-- CONTAINER PRINCIPAL -->
+  <div class="flex-1 flex flex-col w-full relative z-10 pb-16">
+
+    <!-- ═══════ CABEÇALHO (SLATE / CLAQUETE) ═══════ -->
+    <header id="slate-header" class="p-6 flex flex-col md:flex-row justify-between items-start gap-6 z-10">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-3 mb-1">
+          <span class="text-[10px] uppercase tracking-[0.2em] font-mono text-[#5d636b]">Planilha de Decupagem / Shot List + Storyboard</span>
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#ff5a4e] rec-blinking"></span>
+            <span class="text-[10px] uppercase tracking-widest text-[#ff5a4e] font-bold">● REC</span>
+          </div>
+        </div>
+
+        <input 
+          type="text" 
+          id="project-title-input" 
+          value="O ÚLTIMO FRAME" 
+          class="bg-transparent border-none text-5xl sm:text-6xl font-bold uppercase tracking-tighter text-[#ffb454] focus:ring-0 focus:outline-none w-full p-0 leading-none cursor-text" 
+          style="font-family: 'Arial Narrow', sans-serif;" 
+          placeholder="TÍTULO DO PROJETO"
+          title="Clique para editar o título do projeto"
+        />
+
+        <div class="flex flex-wrap items-center gap-4 mt-2 text-xs font-mono text-[#5d636b] uppercase">
+          <div class="flex items-center gap-1.5">
+            <span>Data:</span>
+            <input 
+              type="date" 
+              id="project-date-input" 
+              class="bg-[#131519] border border-white/10 text-xs px-2 py-0.5 rounded text-[#e9e5da] focus:border-[#ffb454] outline-none font-mono" 
+            />
+          </div>
+          <span>Roteiro de Filmagem v.04</span>
+          <div class="flex items-center gap-1.5 text-[#5ad0dd]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#5ad0dd]"></span>
+            <span>Autosave Ativo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tiles de Estatísticas (À Direita) -->
+      <div class="flex gap-4 items-center no-print">
+        <div class="bg-[#131519] border border-white/10 p-3 w-32 rounded shadow-lg">
+          <div class="text-[10px] text-[#5d636b] uppercase mb-1 font-mono">Planos</div>
+          <div id="stat-total-shots" class="text-2xl font-bold text-[#e9e5da]">142</div>
+        </div>
+
+        <div class="bg-[#131519] border border-white/10 p-3 w-32 rounded shadow-lg">
+          <div class="text-[10px] text-[#5d636b] uppercase mb-1 font-mono">Cenas</div>
+          <div id="stat-total-scenes" class="text-2xl font-bold text-[#5ad0dd]">12</div>
+        </div>
+
+        <div 
+          id="stat-duration-tile" 
+          class="bg-[#131519] border border-white/10 p-3 w-32 rounded shadow-lg cursor-pointer hover:border-[#ffb454] transition-colors"
+          title="Clique para alternar o modo: TC (Timecode) ▸ H·MIN ▸ SEG"
+        >
+          <div class="text-[10px] text-[#5d636b] uppercase mb-1 font-mono flex items-center justify-between">
+            <span>Duração (TC)</span>
+            <span id="stat-duration-badge" class="text-[8px] text-[#ffb454] font-bold font-mono">TC</span>
+          </div>
+          <div id="stat-duration-main" class="text-2xl font-bold text-[#ffb454] font-mono">00:04:12</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════ NAVBAR & CONTROLES ═══════ -->
+    <nav class="px-6 pb-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10 no-print">
+      <div class="flex flex-wrap items-center gap-2">
+        <button 
+          id="btn-add-shot" 
+          class="bg-[#ffb454] hover:bg-[#ffaa3b] text-[#0e1013] px-4 py-2 text-xs font-bold uppercase tracking-wider rounded flex items-center gap-2 transition-all active:scale-95 cursor-pointer font-mono shadow-md"
+          title="Adicionar novo plano (Alt+N)"
+        >
+          <span>＋</span> Novo Plano
+        </button>
+
+        <button 
+          id="btn-duplicate-last" 
+          class="bg-white/5 hover:bg-white/10 text-xs px-4 py-2 rounded border border-white/10 uppercase font-mono text-[#e9e5da] transition-all cursor-pointer"
+          title="Duplica as configurações do último plano cadastrado"
+        >
+          Duplicar
+        </button>
+
+        <button 
+          id="btn-quick-pdf" 
+          class="bg-[#ffb454]/15 hover:bg-[#ffb454]/25 border border-[#ffb454]/50 hover:border-[#ffb454] text-xs px-3.5 py-2 rounded uppercase font-mono text-[#ffb454] flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer font-bold shadow-sm"
+          title="Exportar PDF cinematográfico com storyboards usando jsPDF"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+          <span>Baixar PDF</span>
+        </button>
+
+        <div class="relative inline-block text-left" id="export-dropdown-container">
+          <button 
+            id="btn-export-dropdown" 
+            type="button" 
+            class="bg-white/5 hover:bg-white/10 text-xs px-4 py-2 rounded border border-white/10 uppercase font-mono text-[#e9e5da] flex items-center gap-2 transition-all cursor-pointer"
+          >
+            Exportar
+            <svg class="w-3 h-3 text-[#5d636b]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+
+          <div 
+            id="export-dropdown-menu" 
+            class="hidden absolute left-0 mt-1.5 w-64 rounded-md bg-[#131519] border border-white/10 shadow-2xl py-1.5 z-50 font-mono text-xs focus:outline-none"
+          >
+            <button id="menu-export-pdf" class="w-full text-left px-3.5 py-2.5 text-[#ffb454] font-bold hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer border-b border-white/10">
+              <svg class="w-3.5 h-3.5 text-[#ffb454]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+              <span>Exportar PDF Cinematográfico</span>
+            </button>
+            <button id="menu-copy-csv" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#ffb454] flex items-center gap-2 transition-colors cursor-pointer">
+              <span>Copiar CSV para Área</span>
+            </button>
+            <button id="menu-download-csv" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#ffb454] flex items-center gap-2 transition-colors cursor-pointer">
+              <span>Baixar CSV (Excel BR)</span>
+            </button>
+            <div class="border-t border-white/10 my-1"></div>
+            <button id="menu-download-json" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#ffb454] flex items-center gap-2 transition-colors cursor-pointer">
+              <span>Baixar Backup JSON</span>
+            </button>
+            <button id="menu-import-json" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#ffb454] flex items-center gap-2 transition-colors cursor-pointer">
+              <span>Importar Backup JSON</span>
+            </button>
+            <div class="border-t border-white/10 my-1"></div>
+            <button id="menu-print" class="w-full text-left px-3.5 py-2 text-[#e9e5da] hover:bg-white/5 hover:text-[#5ad0dd] flex items-center gap-2 transition-colors cursor-pointer">
+              <span>Imprimir Navegador</span>
+            </button>
+          </div>
+        </div>
+
+        <input type="file" id="json-file-input" accept=".json" class="hidden" />
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-[#5d636b] text-xs pointer-events-none">🔍</span>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="BUSCAR PLANO..." 
+            class="bg-[#131519] border border-white/10 text-xs px-8 py-2 rounded w-64 focus:border-[#ffb454] outline-none text-[#e9e5da] placeholder-[#5d636b] font-mono transition-colors" 
+          />
+          <button id="btn-clear-search" class="hidden absolute right-2.5 top-2 text-[#5d636b] hover:text-[#e9e5da]" title="Limpar busca">✕</button>
+        </div>
+
+        <button 
+          id="btn-open-clear-modal" 
+          class="text-[#ff5a4e] hover:text-[#ff766c] text-[10px] uppercase font-bold tracking-widest transition-colors cursor-pointer"
+          title="Apagar todos os planos da planilha"
+        >
+          Limpar Projeto
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══════ BARRA DE FILTROS POR CENA ═══════ -->
+    <div id="scene-filter-bar" class="px-6 mb-4 flex flex-wrap items-center justify-between gap-2 z-10 no-print">
+      <div class="flex flex-wrap items-center gap-2" id="scene-chips-container">
+        <!-- Chips dinâmicos -->
+      </div>
+      <div id="filter-summary-count" class="text-[#5d636b] text-[11px] font-mono whitespace-nowrap"></div>
+    </div>
+
+    <!-- ═══════ A PLANILHA (TABELA CINEMATOGRÁFICA) ═══════ -->
+    <main class="flex-1 px-6 pb-2 overflow-hidden z-10">
+      <div class="w-full h-full border border-white/10 bg-[#131519]/50 rounded-lg overflow-hidden flex flex-col shadow-2xl">
+        <div class="overflow-x-auto min-h-[380px]">
+          <table id="shotlist-table" class="w-full border-collapse text-left table-fixed min-w-[1240px]">
+            <colgroup>
+              <col style="width: 60px;" />    <!-- # -->
+              <col style="width: 120px;" />   <!-- Storyboard -->
+              <col style="width: 190px;" />   <!-- Linguagem -->
+              <col style="width: 100px;" />   <!-- Cena -->
+              <col style="width: 320px;" />   <!-- Descrição -->
+              <col style="width: 160px;" />   <!-- Locação -->
+              <col style="width: 140px;" />   <!-- Iluminação -->
+              <col style="width: 130px;" />   <!-- Duração -->
+              <col style="width: 160px;" />   <!-- Trilha -->
+              <col style="width: 60px;" />    <!-- Actions -->
+            </colgroup>
+
+            <thead>
+              <tr class="bg-[#131519] border-b border-white/10 text-[10px] uppercase font-mono text-[#5d636b] select-none">
+                <th class="p-3 text-center">#</th>
+                <th class="p-3">Storyboard</th>
+                <th class="p-3">Linguagem</th>
+                <th class="p-3 text-[#5ad0dd]">Cena</th>
+                <th class="p-3">Descrição</th>
+                <th class="p-3">Locação</th>
+                <th class="p-3">Iluminação</th>
+                <th class="p-3 text-[#ffb454]">Duração</th>
+                <th class="p-3">Trilha</th>
+                <th class="p-3 text-center actions-cell">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody id="shotlist-tbody" class="text-sm divide-y divide-white/5 font-sans">
+              <!-- Linhas geradas dinamicamente via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado Vazio (Sem Planos) -->
+        <div id="empty-state" class="hidden py-16 px-4 flex-col items-center justify-center text-center">
+          <div class="w-16 h-16 rounded-full bg-[#131519] border border-white/10 flex items-center justify-center mb-4 text-[#ffb454]/70 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+          </div>
+          <h3 class="font-bebas text-2xl tracking-wider text-[#e9e5da] uppercase">Nenhum plano decupado</h3>
+          <p class="text-[#5d636b] text-xs font-mono max-w-sm mt-1 mb-5">Inicie a criação da decupagem do seu roteiro clicando no botão abaixo ou pressione Alt+N.</p>
+          <button id="btn-empty-add" class="bg-[#ffb454] hover:bg-[#ffaa3b] text-[#0e1013] font-bold font-mono text-xs px-5 py-2.5 rounded shadow-lg transition-all active:scale-95 cursor-pointer">
+            ＋ ADICIONAR PRIMEIRO PLANO
+          </button>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ═══════ BARRA DE STATUS INFERIOR FIXA ═══════ -->
+  <footer id="bottom-status-bar" class="fixed bottom-0 left-0 right-0 h-10 bg-[#131519] border-t border-white/10 px-6 flex items-center justify-between z-30 text-[10px] font-mono tracking-widest select-none no-print shadow-2xl">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#ff5a4e] rec-blinking"></span>
+        <span class="text-[#ff5a4e] font-bold">REC PISCANDO</span>
+      </div>
+      <div class="text-[#5d636b]">STATUS: <span id="status-save-text" class="text-[#5ad0dd] uppercase">● SALVO 14:42:01</span></div>
+    </div>
+
+    <div class="hidden lg:flex items-center gap-4 text-[#5d636b]">
+      [ALT+N] NOVO PLANO | [CTRL+S] SALVAR | [ENTER] PRÓXIMA CÉLULA
+    </div>
+
+    <div class="flex items-center gap-4 text-[#e9e5da]">
+      <span id="status-total-plans">142 PLANOS</span>
+      <span id="status-total-time" class="text-[#ffb454]">04min 12s</span>
+      <span class="text-[#5d636b] opacity-50">|</span>
+      <span id="status-timecode" class="text-[#e9e5da] font-mono">00:04:12:00</span>
+    </div>
+  </footer>
+
+  <!-- ═══════ LIGHTBOX FULLSCREEN (STORYBOARD) ═══════ -->
+  <div id="lightbox-modal" class="fixed inset-0 bg-black/95 z-50 hidden flex-col items-center justify-center p-4 backdrop-blur-sm no-print">
+    <!-- Botão Fechar -->
+    <button id="btn-close-lightbox" class="absolute top-5 right-6 text-film-muted hover:text-film-amber transition-colors p-2 text-2xl font-mono cursor-pointer" title="Fechar (ESC)">✕</button>
+    
+    <div class="max-w-4xl w-full flex flex-col items-center">
+      <!-- Imagem Ampliada com Moldura Cinematográfica -->
+      <div class="relative bg-film-panel border-2 border-film-border rounded-lg p-2 shadow-2xl max-h-[70vh] flex items-center justify-center overflow-hidden">
+        <img id="lightbox-img" src="" alt="Storyboard Preview" class="max-h-[65vh] max-w-full object-contain rounded" />
+      </div>
+
+      <!-- Metadados do Plano no Lightbox -->
+      <div class="mt-4 text-center font-mono max-w-2xl">
+        <div class="flex items-center justify-center gap-3 text-xs uppercase tracking-widest text-film-muted">
+          <span id="lightbox-shot-num" class="text-film-amber font-bold text-base">PLANO 001</span>
+          <span>•</span>
+          <span id="lightbox-scene-name" class="text-film-teal font-semibold">CENA 01</span>
+          <span>•</span>
+          <span id="lightbox-location" class="text-film-text">LOCAÇÃO</span>
+        </div>
+        <p id="lightbox-description" class="font-barlow text-film-text text-sm mt-2 italic px-4 text-center line-clamp-3"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ MODAL DE CONFIRMAÇÃO (LIMPAR PLANILHA) ═══════ -->
+  <div id="clear-modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+    <div class="bg-film-card border border-film-border rounded-lg max-w-md w-full p-6 shadow-2xl relative">
+      <div class="w-12 h-12 rounded-full bg-film-red/10 border border-film-red/30 text-film-red flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+      </div>
+      <h3 class="font-bebas text-2xl tracking-wider text-film-text uppercase">Limpar toda a decupagem?</h3>
+      <p class="text-film-muted text-xs font-mono mt-1 mb-6 leading-relaxed">
+        Esta ação apagará todos os planos e storyboards da planilha atual. Recomenda-se baixar um backup em JSON ou CSV antes de prosseguir.
+      </p>
+      <div class="flex items-center justify-end gap-3 font-mono text-xs">
+        <button id="btn-cancel-clear" class="px-4 py-2 rounded bg-film-panel hover:bg-film-card border border-film-border text-film-text transition-colors cursor-pointer">
+          Cancelar
+        </button>
+        <button id="btn-confirm-clear" class="px-4 py-2 rounded bg-film-red hover:bg-film-red-dark text-white font-bold transition-colors cursor-pointer">
+          Sim, Limpar Tudo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Oculto Global para Upload de Storyboard -->
+  <input type="file" id="global-image-input" accept="image/*" class="hidden" />
+
+  <!-- Datalist de Sugestões de Locações Cinematográficas -->
+  <datalist id="locacoes-suggestions">
+    <option value="INT. SALA DE ESTAR - DIA"></option>
+    <option value="INT. SALA DE ESTAR - NOITE"></option>
+    <option value="INT. QUARTO - NOITE"></option>
+    <option value="INT. COZINHA - DIA"></option>
+    <option value="INT. ESCRITÓRIO - DIA"></option>
+    <option value="INT. METRÔ - NOITE"></option>
+    <option value="INT. CARRO EM MOVIMENTO - NOITE"></option>
+    <option value="INT. ESTÚDIO - DIA"></option>
+    <option value="EXT. AVENIDA PAULISTA - DIA"></option>
+    <option value="EXT. RUA DESERTA - NOITE"></option>
+    <option value="EXT. PARQUE - TARDE"></option>
+    <option value="EXT. TERRAÇO DO EDIFÍCIO - PÔR DO SOL"></option>
+    <option value="EXT. PRAÇA CENTRAL - DIA"></option>
+  </datalist>
+
+  <!-- Container de Toasts (Notificações Flutuantes) -->
+  <div id="toast-container" class="fixed bottom-12 right-6 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
+
+  <!-- ═══════ JAVASCRIPT VANILLA DA APLICAÇÃO ═══════ -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ─── CONSTANTES E OPÇÕES CINEMATOGRÁFICAS ───
+      const STORAGE_KEY = 'shotlist_cinematografica_v1';
+
+      const OPTIONS_PLANO = [
+        'Grande Plano Geral (GPG)',
+        'Plano Geral (PG)',
+        'Plano Conjunto (PC)',
+        'Plano Médio (PM)',
+        'Plano Americano (PA)',
+        'Meio Close-up (MCU)',
+        'Close-up (CU)',
+        'Primeiríssimo Plano (PPP)',
+        'Plano Detalhe / Insert',
+        'Over-the-Shoulder (OTS)',
+        'Ponto de Vista (POV)',
+        'Plano Aéreo / Drone'
+      ];
+
+      const OPTIONS_ANGULO = [
+        'Frontal (Normal)',
+        'Plongée (de cima)',
+        'Contra-plongée (de baixo)',
+        'Zenital (Top-down)',
+        'Nadir (Chão 90°)',
+        'Holandês (Inclinado / Dutch)',
+        'Perfil lateral'
+      ];
+
+      const OPTIONS_MOVIMENTO = [
+        'Fixo (Estático)',
+        'Panorâmica (Pan E/D)',
+        'Tilt (Cima/Baixo)',
+        'Travelling (Trilho)',
+        'Dolly In / Push-in',
+        'Dolly Out / Pull-out',
+        'Steadicam',
+        'Câmera na mão (Handheld)',
+        'Zoom In / Out',
+        'Grua / Jib',
+        'Whip Pan (Chicote)',
+        'Câmera Orbital 360°'
+      ];
+
+      const OPTIONS_LUZ = [
+        'Natural Dia (Direta)',
+        'Natural Dia (Difusa / Nublado)',
+        'Golden Hour (Pôr do sol)',
+        'Blue Hour / Entardecer',
+        'Natural Noite',
+        'Tungstênio (Quente 3200K)',
+        'LED Daylight (5600K)',
+        'Mista (Ambiente + Práticos)',
+        'Low-Key (Contraste alto)',
+        'High-Key (Suave uniforme)',
+        'Neon & Práticos urbanos',
+        'Contraluz / Silhueta',
+        'Velas & Fogo'
+      ];
+
+      // Gerador de mock storyboard cinematográfico para demonstração imediata
+      function createSampleFrame(title, badge, theme) {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = 320;
+          canvas.height = 180;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return '';
+          
+          const grad = ctx.createLinearGradient(0, 0, 320, 180);
+          if (theme === 'teal') {
+            grad.addColorStop(0, '#0a1d24');
+            grad.addColorStop(0.6, '#0f141a');
+            grad.addColorStop(1, '#07090b');
+          } else {
+            grad.addColorStop(0, '#2b1a08');
+            grad.addColorStop(0.6, '#1a130f');
+            grad.addColorStop(1, '#07090b');
+          }
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 320, 180);
+
+          // Letterbox cinemascope
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(0, 0, 320, 22);
+          ctx.fillRect(0, 158, 320, 22);
+
+          // Grid & enquadramento
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(35, 30, 250, 120);
+
+          // Linhas de terços
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+          ctx.beginPath();
+          ctx.moveTo(118, 30); ctx.lineTo(118, 150);
+          ctx.moveTo(202, 30); ctx.lineTo(202, 150);
+          ctx.moveTo(35, 70); ctx.lineTo(285, 70);
+          ctx.moveTo(35, 110); ctx.lineTo(285, 110);
+          ctx.stroke();
+
+          // Centro e silhueta
+          const accent = theme === 'teal' ? '#5ad0dd' : '#ffb454';
+          ctx.fillStyle = theme === 'teal' ? 'rgba(90, 208, 221, 0.2)' : 'rgba(255, 180, 84, 0.2)';
+          ctx.beginPath();
+          ctx.arc(160, 90, 32, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = accent;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Mira focal
+          ctx.beginPath();
+          ctx.moveTo(160, 80); ctx.lineTo(160, 100);
+          ctx.moveTo(150, 90); ctx.lineTo(170, 90);
+          ctx.stroke();
+
+          // Textos do frame
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 15px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(title, 160, 138);
+
+          ctx.fillStyle = accent;
+          ctx.font = 'bold 10px monospace';
+          ctx.fillText(badge, 160, 15);
+
+          return canvas.toDataURL('image/jpeg', 0.85);
+        } catch (e) {
+          return '';
+        }
+      }
+
+      // Exemplos Paulistanos Iniciais
+      const INITIAL_SAMPLE_DATA = {
+        meta: {
+          titulo: 'O ÚLTIMO FRAME',
+          data: new Date().toISOString().split('T')[0]
+        },
+        rows: [
+          {
+            id: 'row_sample_1',
+            plano: 'Grande Plano Geral (GPG)',
+            angulo: 'Zenital (Top-down)',
+            movimento: 'Travelling (Trilho)',
+            cena: 'CENA 01',
+            descricao: 'Visão aérea do mezanino da estação da Sé às 23h58. Quase deserto, ecos distantes de passos e reflexos das lâmpadas fluorescentes no piso de granilite polido.',
+            locacao: 'INT. ESTAÇÃO DA SÉ - NOITE',
+            luz: 'Neon & Práticos urbanos',
+            duracao: 4.5,
+            trilha: 'Drone grave contínuo + gotejar metálico',
+            thumb: ''
+          },
+          {
+            id: 'row_sample_2',
+            plano: 'Plano Médio (PM)',
+            angulo: 'Frontal (Normal)',
+            movimento: 'Steadicam',
+            cena: 'CENA 01',
+            descricao: 'ELENA (32) caminha apressada com capa de chuva úmida, olhando repetidamente o relógio de pulso que marca 23h59. A respiração é audível.',
+            locacao: 'INT. PLATAFORMA CENTRAL - NOITE',
+            luz: 'Mista (Ambiente + Práticos)',
+            duracao: 3.5,
+            trilha: 'Contrabaixo tenso sincopado',
+            thumb: ''
+          },
+          {
+            id: 'row_sample_3',
+            plano: 'Close-up (CU)',
+            angulo: 'Holandês (Inclinado / Dutch)',
+            movimento: 'Dolly In / Push-in',
+            cena: 'CENA 02',
+            descricao: 'O farol do trem surge no túnel escuro criando feixes volumétricos de poeira e luz intensa nos olhos de Elena. Ela hesita um instante.',
+            locacao: 'INT. TÚNEL DO METRÔ - NOITE',
+            luz: 'Contraluz / Silhueta',
+            duracao: 2.5,
+            trilha: 'Ruído de freios pneumáticos e apito',
+            thumb: ''
+          },
+          {
+            id: 'row_sample_4',
+            plano: 'Plano Detalhe / Insert',
+            angulo: 'Plongée (de cima)',
+            movimento: 'Fixo (Estático)',
+            cena: 'CENA 02',
+            descricao: 'Portas metálicas pneumáticas se fechando violentamente entre o vão da plataforma. Um bilhete de papel dobrado cai no espaço escuro entre o vagão e o chão.',
+            locacao: 'INT. VAGÃO / PORTAS - NOITE',
+            luz: 'Low-Key (Contraste alto)',
+            duracao: 2.0,
+            trilha: 'Sinal sonoro de fechamento das portas',
+            thumb: ''
+          }
+        ]
+      };
+
+      // ─── ESTADO GLOBAL DO APP ───
+      let appState = {
+        meta: { titulo: '', data: '' },
+        rows: []
+      };
+
+      let currentSceneFilter = 'TODAS';
+      let currentSearchQuery = '';
+      let durationDisplayMode = 'TC'; // 'TC' | 'HMIN' | 'SEG'
+      let autosaveTimeout = null;
+      let undoStack = []; // Pilha para desfazer exclusões
+      let draggedRowId = null;
+      let activeImageUploadRowId = null;
+
+      // ─── UTILITÁRIOS DE TEMPO E FORMATAÇÃO ───
+      function formatSecondsToTimecode(totalSec) {
+        const sec = Math.max(0, parseFloat(totalSec) || 0);
+        const hours = Math.floor(sec / 3600);
+        const minutes = Math.floor((sec % 3600) / 60);
+        const seconds = Math.floor(sec % 60);
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }
+
+      function formatSecondsToHMin(totalSec) {
+        const sec = Math.max(0, Math.round(parseFloat(totalSec) || 0));
+        const hours = Math.floor(sec / 3600);
+        const minutes = Math.floor((sec % 3600) / 60);
+        const seconds = sec % 60;
+        if (hours > 0) {
+          return `${hours}h ${String(minutes).padStart(2, '0')}min ${String(seconds).padStart(2, '0')}s`;
+        }
+        if (minutes > 0) {
+          return `${minutes}min ${String(seconds).padStart(2, '0')}s`;
+        }
+        return `${seconds}s`;
+      }
+
+      function calculateCumulativeTimecodes() {
+        let runningTotal = 0;
+        return appState.rows.map(row => {
+          const inSec = runningTotal;
+          const dur = Math.max(0, parseFloat(row.duracao) || 0);
+          const outSec = inSec + dur;
+          runningTotal = outSec;
+          return { inSec, outSec, inTC: formatSecondsToTimecode(inSec), outTC: formatSecondsToTimecode(outSec) };
+        });
+      }
+
+      // ─── PERSISTÊNCIA & AUTOSAVE ───
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.rows)) {
+              appState = parsed;
+              return;
+            }
+          }
+        } catch (e) {
+          console.warn('Falha ao carregar localStorage:', e);
+        }
+        // Se vazio ou corrompido, carrega dados de exemplo
+        appState = JSON.parse(JSON.stringify(INITIAL_SAMPLE_DATA));
+        if (appState.rows[0] && !appState.rows[0].thumb) {
+          appState.rows[0].thumb = createSampleFrame('ESTAÇÃO DA SÉ', 'GPG // ZENITAL // 23h58', 'teal');
+        }
+        if (appState.rows[1] && !appState.rows[1].thumb) {
+          appState.rows[1].thumb = createSampleFrame('ELENA (32)', 'PM // STEADICAM // 23h59', 'amber');
+        }
+      }
+
+      function triggerAutosave() {
+        setSaveIndicator('editando…', 'text-film-amber');
+        clearTimeout(autosaveTimeout);
+        autosaveTimeout = setTimeout(() => {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('pt-BR');
+            setSaveIndicator(`● salvo às ${timeStr}`, 'text-film-teal');
+          } catch (err) {
+            console.error('Erro de cota ao salvar no localStorage:', err);
+            setSaveIndicator('⚠ erro de cota', 'text-film-red');
+            showToast('Aviso: Armazenamento cheio! Algumas imagens podem estar muito pesadas.', 'error');
+          }
+        }, 400);
+      }
+
+      function setSaveIndicator(text, colorClass) {
+        const el = document.getElementById('status-save-text');
+        const parent = document.getElementById('status-save-indicator');
+        if (el) el.textContent = text;
+        if (parent) {
+          parent.className = `flex items-center gap-1.5 ${colorClass}`;
+        }
+      }
+
+      // ─── TOASTS ───
+      function showToast(message, type = 'info', actionBtn = null) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-2.5 rounded shadow-2xl border text-xs font-mono transition-all transform duration-300 translate-y-4 opacity-0 ${
+          type === 'error' ? 'bg-film-card border-film-red text-film-red' :
+          type === 'success' ? 'bg-film-card border-film-teal text-film-teal' :
+          'bg-film-card border-film-amber text-film-text'
+        }`;
+
+        const msgSpan = document.createElement('span');
+        msgSpan.textContent = message;
+        toast.appendChild(msgSpan);
+
+        if (actionBtn) {
+          const btn = document.createElement('button');
+          btn.className = 'ml-2 px-2 py-0.5 rounded bg-film-amber/20 hover:bg-film-amber text-film-amber hover:text-film-black font-bold uppercase transition-colors cursor-pointer';
+          btn.textContent = actionBtn.label;
+          btn.onclick = () => {
+            actionBtn.callback();
+            toast.remove();
+          };
+          toast.appendChild(btn);
+        }
+
+        container.appendChild(toast);
+
+        // Animação de entrada
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-4', 'opacity-0');
+        });
+
+        // Remoção automática
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-x-4');
+          setTimeout(() => toast.remove(), 300);
+        }, actionBtn ? 6000 : 3500);
+      }
+
+      // ─── PROCESSAMENTO DE IMAGEM NO CANVAS ───
+      function processImageFile(file, callback) {
+        if (!file || !file.type.startsWith('image/')) {
+          showToast('Arquivo inválido: selecione uma imagem.', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxDim = 360;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width);
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height);
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // Exporta como JPEG 0.72 para compressão cinematográfica leve
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+            callback(dataUrl);
+          };
+          img.onerror = () => showToast('Falha ao processar imagem.', 'error');
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // ─── CRIAÇÃO DE SELECT COM OPÇÃO "OUTRO..." ───
+      function createCinematicSelect(name, currentVal, optionsList, onValChange) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'w-full';
+
+        const isKnown = optionsList.includes(currentVal);
+        let activeValue = currentVal || optionsList[0];
+
+        function renderSelectMode() {
+          wrapper.innerHTML = '';
+          const select = document.createElement('select');
+          select.className = 'sheet-select';
+
+          optionsList.forEach(opt => {
+            const el = document.createElement('option');
+            el.value = opt;
+            el.textContent = opt;
+            if (opt === activeValue) el.selected = true;
+            select.appendChild(el);
+          });
+
+          // Se tiver valor customizado anterior que não tá na lista base, insere ele
+          if (activeValue && !optionsList.includes(activeValue)) {
+            const customOpt = document.createElement('option');
+            customOpt.value = activeValue;
+            customOpt.textContent = `★ ${activeValue}`;
+            customOpt.selected = true;
+            select.insertBefore(customOpt, select.firstChild);
+          }
+
+          // Opção para digitar outro
+          const otherOpt = document.createElement('option');
+          otherOpt.value = '__OTHER__';
+          otherOpt.textContent = '✎ Outro… (Digitar)';
+          select.appendChild(otherOpt);
+
+          select.onchange = (e) => {
+            if (e.target.value === '__OTHER__') {
+              renderInputMode();
+            } else {
+              activeValue = e.target.value;
+              onValChange(activeValue);
+            }
+          };
+
+          wrapper.appendChild(select);
+        }
+
+        function renderInputMode() {
+          wrapper.innerHTML = '';
+          const inputContainer = document.createElement('div');
+          inputContainer.className = 'flex items-center gap-1';
+
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'sheet-input text-[11px] px-1.5 py-0.5 border border-film-amber bg-film-panel text-film-amber';
+          input.placeholder = 'Digite o enquadramento...';
+          input.value = activeValue && !optionsList.includes(activeValue) ? activeValue : '';
+
+          const btnSave = document.createElement('button');
+          btnSave.className = 'px-1.5 py-0.5 rounded bg-film-amber text-film-black font-bold text-[10px] cursor-pointer';
+          btnSave.textContent = 'OK';
+
+          function saveCustom() {
+            const val = input.value.trim();
+            if (val) {
+              activeValue = val;
+              onValChange(val);
+            }
+            renderSelectMode();
+          }
+
+          btnSave.onclick = saveCustom;
+          input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              saveCustom();
+            } else if (e.key === 'Escape') {
+              renderSelectMode();
+            }
+          };
+
+          inputContainer.appendChild(input);
+          inputContainer.appendChild(btnSave);
+          wrapper.appendChild(inputContainer);
+          setTimeout(() => input.focus(), 50);
+        }
+
+        renderSelectMode();
+        return wrapper;
+      }
+
+      // ─── RENDERIZAÇÃO DA TABELA ───
+      function renderTable() {
+        const tbody = document.getElementById('shotlist-tbody');
+        const emptyState = document.getElementById('empty-state');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        // Filtros ativos
+        const query = currentSearchQuery.toLowerCase().trim();
+        const filteredRows = appState.rows.filter(row => {
+          const matchScene = (currentSceneFilter === 'TODAS') || (row.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
+          if (!matchScene) return false;
+          if (!query) return true;
+          const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz}`.toLowerCase();
+          return hay.includes(query);
+        });
+
+        // Alternância do Estado Vazio
+        if (appState.rows.length === 0) {
+          emptyState.classList.remove('hidden');
+          emptyState.classList.add('flex');
+        } else {
+          emptyState.classList.add('hidden');
+          emptyState.classList.remove('flex');
+        }
+
+        // Calcula os timecodes acumulados
+        const times = calculateCumulativeTimecodes();
+
+        filteredRows.forEach((row, filteredIndex) => {
+          const originalIndex = appState.rows.findIndex(r => r.id === row.id);
+          const timeData = times[originalIndex] || { inTC: '00:00:00', outTC: '00:00:00', inSec: 0, outSec: 0 };
+          const formattedShotNumber = String(originalIndex + 1).padStart(3, '0');
+
+          const tr = document.createElement('tr');
+          tr.className = 'film-row border-b border-film-border-subtle group transition-colors';
+          tr.dataset.id = row.id;
+
+          // Suporte a arrastar e soltar imagens direto na linha
+          tr.ondragover = (e) => {
+            if (e.dataTransfer.types.includes('Files')) {
+              e.preventDefault();
+              tr.classList.add('bg-film-amber/10');
+            }
+          };
+          tr.ondragleave = () => tr.classList.remove('bg-film-amber/10');
+          tr.ondrop = (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+              e.preventDefault();
+              tr.classList.remove('bg-film-amber/10');
+              processImageFile(e.dataTransfer.files[0], (dataUrl) => {
+                row.thumb = dataUrl;
+                triggerAutosave();
+                renderTable();
+                showToast(`Storyboard atualizado para o plano ${formattedShotNumber}!`, 'success');
+              });
+            }
+          };
+
+          // ── 1. Nº & DRAG HANDLE ──
+          const tdNum = document.createElement('td');
+          tdNum.className = 'py-2 px-2 text-center align-middle select-none';
+          tdNum.innerHTML = `
+            <div class="flex items-center justify-center gap-1">
+              <span class="drag-handle cursor-grab active:cursor-grabbing text-film-muted hover:text-film-amber p-1 text-sm font-mono opacity-40 group-hover:opacity-100 transition-opacity" title="Arraste para reordenar" draggable="true">⠿</span>
+              <span class="font-mono text-film-amber font-bold text-xs tracking-wider">${formattedShotNumber}</span>
+            </div>
+          `;
+
+          // Eventos de Drag & Drop para Reordenação
+          const handle = tdNum.querySelector('.drag-handle');
+          handle.ondragstart = (e) => {
+            draggedRowId = row.id;
+            tr.classList.add('is-dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', row.id);
+          };
+          handle.ondragend = () => {
+            draggedRowId = null;
+            document.querySelectorAll('.film-row').forEach(el => {
+              el.classList.remove('is-dragging', 'drag-over-top', 'drag-over-bottom');
+            });
+          };
+
+          tr.ondragover = (e) => {
+            if (draggedRowId && draggedRowId !== row.id) {
+              e.preventDefault();
+              const rect = tr.getBoundingClientRect();
+              const midY = rect.top + rect.height / 2;
+              if (e.clientY < midY) {
+                tr.classList.add('drag-over-top');
+                tr.classList.remove('drag-over-bottom');
+              } else {
+                tr.classList.add('drag-over-bottom');
+                tr.classList.remove('drag-over-top');
+              }
+            }
+          };
+          tr.ondragleave = () => {
+            tr.classList.remove('drag-over-top', 'drag-over-bottom');
+          };
+          tr.ondrop = (e) => {
+            if (draggedRowId && draggedRowId !== row.id) {
+              e.preventDefault();
+              const fromIndex = appState.rows.findIndex(r => r.id === draggedRowId);
+              const toIndex = appState.rows.findIndex(r => r.id === row.id);
+              if (fromIndex !== -1 && toIndex !== -1) {
+                const insertBefore = tr.classList.contains('drag-over-top');
+                const [movedRow] = appState.rows.splice(fromIndex, 1);
+                let targetIndex = appState.rows.findIndex(r => r.id === row.id);
+                if (!insertBefore) targetIndex += 1;
+                appState.rows.splice(targetIndex, 0, movedRow);
+                triggerAutosave();
+                renderTable();
+                showToast('Planos reordenados!', 'info');
+              }
+            }
+          };
+
+          // ── 2. STORYBOARD (THUMBNAIL) ──
+          const tdThumb = document.createElement('td');
+          tdThumb.className = 'py-2 px-2 text-center align-middle';
+
+          if (row.thumb) {
+            tdThumb.innerHTML = `
+              <div class="relative w-[80px] h-[48px] mx-auto film-frame-border rounded overflow-hidden group/thumb cursor-pointer">
+                <img src="${row.thumb}" alt="Plano ${formattedShotNumber}" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-black/80 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center gap-1.5 transition-opacity no-print">
+                  <button type="button" class="btn-zoom text-film-amber hover:text-white p-1" title="Ampliar Storyboard">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path></svg>
+                  </button>
+                  <button type="button" class="btn-replace text-film-teal hover:text-white p-1" title="Substituir Imagem">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  </button>
+                  <button type="button" class="btn-del-thumb text-film-red hover:text-white p-1" title="Remover Imagem">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            `;
+
+            tdThumb.querySelector('.btn-zoom').onclick = () => openLightbox(row, formattedShotNumber);
+            tdThumb.querySelector('.btn-replace').onclick = () => requestImageUpload(row.id);
+            tdThumb.querySelector('.btn-del-thumb').onclick = () => {
+              row.thumb = '';
+              triggerAutosave();
+              renderTable();
+            };
+          } else {
+            tdThumb.innerHTML = `
+              <button type="button" class="w-[80px] h-[48px] mx-auto border border-dashed border-film-border hover:border-film-amber/60 rounded flex flex-col items-center justify-center gap-0.5 text-film-muted hover:text-film-amber transition-colors bg-film-panel cursor-pointer no-print" title="Adicionar frame do storyboard">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[9px] font-mono tracking-wider uppercase font-semibold">FOTO</span>
+              </button>
+            `;
+            tdThumb.querySelector('button').onclick = () => requestImageUpload(row.id);
+          }
+
+          // ── 3. CÂMERA: PLANO / ÂNGULO / MOVIMENTO (3 SELECTS EMPILHADOS) ──
+          const tdCamera = document.createElement('td');
+          tdCamera.className = 'py-2 px-3 align-top';
+          const cameraStack = document.createElement('div');
+          cameraStack.className = 'flex flex-col gap-1';
+
+          // Plano
+          const rowPlano = document.createElement('div');
+          rowPlano.className = 'flex items-center gap-1.5';
+          rowPlano.innerHTML = `<span class="text-[9px] font-mono font-bold text-film-amber/80 w-8 tracking-tighter">PLAN:</span>`;
+          rowPlano.appendChild(createCinematicSelect('plano', row.plano, OPTIONS_PLANO, (v) => { row.plano = v; triggerAutosave(); }));
+
+          // Ângulo
+          const rowAngulo = document.createElement('div');
+          rowAngulo.className = 'flex items-center gap-1.5';
+          rowAngulo.innerHTML = `<span class="text-[9px] font-mono font-bold text-film-teal/80 w-8 tracking-tighter">ÂNG:</span>`;
+          rowAngulo.appendChild(createCinematicSelect('angulo', row.angulo, OPTIONS_ANGULO, (v) => { row.angulo = v; triggerAutosave(); }));
+
+          // Movimento
+          const rowMov = document.createElement('div');
+          rowMov.className = 'flex items-center gap-1.5';
+          rowMov.innerHTML = `<span class="text-[9px] font-mono font-bold text-film-muted w-8 tracking-tighter">MOV:</span>`;
+          rowMov.appendChild(createCinematicSelect('movimento', row.movimento, OPTIONS_MOVIMENTO, (v) => { row.movimento = v; triggerAutosave(); }));
+
+          cameraStack.appendChild(rowPlano);
+          cameraStack.appendChild(rowAngulo);
+          cameraStack.appendChild(rowMov);
+          tdCamera.appendChild(cameraStack);
+
+          // ── 4. CENA ──
+          const tdCena = document.createElement('td');
+          tdCena.className = 'py-2 px-2 align-top';
+          const inputCena = document.createElement('input');
+          inputCena.type = 'text';
+          inputCena.className = 'sheet-input font-mono font-bold text-xs text-film-teal px-2 py-1 uppercase tracking-wider';
+          inputCena.value = row.cena || 'CENA 01';
+          inputCena.placeholder = 'CENA 01';
+          inputCena.oninput = (e) => {
+            row.cena = e.target.value;
+            triggerAutosave();
+          };
+          inputCena.onchange = () => {
+            renderSceneChips();
+            updateStatTiles();
+          };
+          inputCena.onkeydown = (e) => handleKeyNavigation(e, originalIndex);
+          tdCena.appendChild(inputCena);
+
+          // ── 5. DESCRIÇÃO DA CENA (TEXTAREA AUTO-GROW) ──
+          const tdDesc = document.createElement('td');
+          tdDesc.className = 'py-2 px-3 align-top';
+          const txtDesc = document.createElement('textarea');
+          txtDesc.rows = 2;
+          txtDesc.className = 'sheet-input font-barlow text-[13px] px-2 py-1 leading-snug resize-none overflow-hidden placeholder-film-muted/50';
+          txtDesc.placeholder = 'Ação dos atores, enquadramento, fala principal...';
+          txtDesc.value = row.descricao || '';
+          
+          function autoResizeTextarea() {
+            txtDesc.style.height = 'auto';
+            txtDesc.style.height = (txtDesc.scrollHeight) + 'px';
+          }
+          txtDesc.oninput = (e) => {
+            row.descricao = e.target.value;
+            autoResizeTextarea();
+            triggerAutosave();
+          };
+          setTimeout(autoResizeTextarea, 0);
+          tdDesc.appendChild(txtDesc);
+
+          // ── 6. LOCAÇÃO (COM DATALIST) ──
+          const tdLoc = document.createElement('td');
+          tdLoc.className = 'py-2 px-3 align-top';
+          const inputLoc = document.createElement('input');
+          inputLoc.type = 'text';
+          inputLoc.setAttribute('list', 'locacoes-suggestions');
+          inputLoc.className = 'sheet-input font-mono text-[11px] px-2 py-1 text-film-text uppercase tracking-tight';
+          inputLoc.placeholder = 'INT/EXT. LOCAÇÃO';
+          inputLoc.value = row.locacao || '';
+          inputLoc.oninput = (e) => {
+            row.locacao = e.target.value;
+            triggerAutosave();
+          };
+          inputLoc.onkeydown = (e) => handleKeyNavigation(e, originalIndex);
+          tdLoc.appendChild(inputLoc);
+
+          // ── 7. LUZ ──
+          const tdLuz = document.createElement('td');
+          tdLuz.className = 'py-2 px-2 align-top';
+          const luzSelect = createCinematicSelect('luz', row.luz, OPTIONS_LUZ, (v) => {
+            row.luz = v;
+            triggerAutosave();
+          });
+          tdLuz.appendChild(luzSelect);
+
+          // ── 8. DURAÇÃO (SEGUNDOS) + TIMECODE ACCUMULADO ──
+          const tdDur = document.createElement('td');
+          tdDur.className = 'py-2 px-2 align-top';
+          const durWrapper = document.createElement('div');
+          durWrapper.className = 'flex flex-col gap-1';
+
+          const inputDur = document.createElement('input');
+          inputDur.type = 'number';
+          inputDur.step = '0.5';
+          inputDur.min = '0';
+          inputDur.className = 'sheet-input font-mono font-bold text-xs text-film-amber px-2 py-1 text-right';
+          inputDur.value = row.duracao;
+          inputDur.oninput = (e) => {
+            row.duracao = parseFloat(e.target.value) || 0;
+            triggerAutosave();
+            recalcTimesInDom();
+            updateStatTiles();
+          };
+          inputDur.onkeydown = (e) => handleKeyNavigation(e, originalIndex);
+
+          // Timecode acumulado IN ▸ OUT com tooltip descritivo
+          const tcSpan = document.createElement('div');
+          tcSpan.className = 'font-mono text-[10px] text-film-muted/80 text-right cursor-help select-none hover:text-film-teal transition-colors';
+          tcSpan.dataset.index = originalIndex;
+          tcSpan.innerHTML = `${timeData.inTC} <span class="text-film-amber">▸</span> ${timeData.outTC}`;
+          tcSpan.title = `Plano: ${formatSecondsToHMin(row.duracao)} | Acumulado até o final: ${formatSecondsToHMin(timeData.outSec)}`;
+
+          durWrapper.appendChild(inputDur);
+          durWrapper.appendChild(tcSpan);
+          tdDur.appendChild(durWrapper);
+
+          // ── 9. TRILHA SONORA / ÁUDIO ──
+          const tdTrilha = document.createElement('td');
+          tdTrilha.className = 'py-2 px-3 align-top';
+          const inputTrilha = document.createElement('input');
+          inputTrilha.type = 'text';
+          inputTrilha.className = 'sheet-input font-mono text-[11px] px-2 py-1 text-film-text/90 placeholder-film-muted/40';
+          inputTrilha.placeholder = 'Efeitos, tema musical, ruídos...';
+          inputTrilha.value = row.trilha || '';
+          inputTrilha.oninput = (e) => {
+            row.trilha = e.target.value;
+            triggerAutosave();
+          };
+          inputTrilha.onkeydown = (e) => handleKeyNavigation(e, originalIndex);
+          tdTrilha.appendChild(inputTrilha);
+
+          // ── 10. AÇÕES (DUPLICAR E EXCLUIR NO HOVER) ──
+          const tdActions = document.createElement('td');
+          tdActions.className = 'py-2 px-1 text-center align-middle actions-cell select-none';
+          tdActions.innerHTML = `
+            <div class="flex items-center justify-center gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
+              <button type="button" class="btn-row-dup p-1 text-film-muted hover:text-film-amber transition-colors cursor-pointer" title="Duplicar este plano">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              </button>
+              <button type="button" class="btn-row-del p-1 text-film-muted hover:text-film-red transition-colors cursor-pointer" title="Excluir este plano">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          `;
+
+          tdActions.querySelector('.btn-row-dup').onclick = () => duplicateRow(originalIndex);
+          tdActions.querySelector('.btn-row-del').onclick = () => deleteRow(originalIndex);
+
+          // Anexa as células à linha
+          tr.appendChild(tdNum);
+          tr.appendChild(tdThumb);
+          tr.appendChild(tdCamera);
+          tr.appendChild(tdCena);
+          tr.appendChild(tdDesc);
+          tr.appendChild(tdLoc);
+          tr.appendChild(tdLuz);
+          tr.appendChild(tdDur);
+          tr.appendChild(tdTrilha);
+          tr.appendChild(tdActions);
+
+          tbody.appendChild(tr);
+        });
+
+        renderSceneChips();
+        updateStatTiles();
+      }
+
+      // ─── NAVEGAÇÃO POR TECLADO ───
+      function handleKeyNavigation(e, rowIndex) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          // Se estiver na última linha, cria um novo plano; senão foca a próxima linha
+          if (rowIndex === appState.rows.length - 1) {
+            addNewShot(true);
+          } else {
+            const nextRow = document.querySelectorAll('.film-row')[rowIndex + 1];
+            if (nextRow) {
+              const input = nextRow.querySelector('input, textarea');
+              if (input) input.focus();
+            }
+          }
+        }
+      }
+
+      // ─── RECALCULAR TIMECODES EM TEMPO REAL NO DOM ───
+      function recalcTimesInDom() {
+        const times = calculateCumulativeTimecodes();
+        document.querySelectorAll('[data-index]').forEach(el => {
+          const idx = parseInt(el.dataset.index, 10);
+          const t = times[idx];
+          if (t && appState.rows[idx]) {
+            el.innerHTML = `${t.inTC} <span class="text-film-amber">▸</span> ${t.outTC}`;
+            el.title = `Plano: ${formatSecondsToHMin(appState.rows[idx].duracao)} | Acumulado até o final: ${formatSecondsToHMin(t.outSec)}`;
+          }
+        });
+      }
+
+      // ─── ATUALIZAÇÃO DOS TILES DE ESTATÍSTICA ───
+      function updateStatTiles() {
+        const totalShots = appState.rows.length;
+        const uniqueScenes = new Set(appState.rows.map(r => r.cena.trim().toUpperCase()).filter(Boolean)).size;
+        const totalDurationSec = appState.rows.reduce((acc, r) => acc + (parseFloat(r.duracao) || 0), 0);
+
+        // Tile 1: Planos
+        const elShots = document.getElementById('stat-total-shots');
+        if (elShots) elShots.textContent = String(totalShots).padStart(2, '0');
+
+        // Tile 2: Cenas
+        const elScenes = document.getElementById('stat-total-scenes');
+        if (elScenes) elScenes.textContent = String(uniqueScenes).padStart(2, '0');
+
+        // Tile 3: Duração Total
+        const elDurMain = document.getElementById('stat-duration-main');
+        const elDurSub = document.getElementById('stat-duration-sub');
+        const elDurBadge = document.getElementById('stat-duration-badge');
+
+        if (elDurMain && elDurSub && elDurBadge) {
+          elDurBadge.textContent = durationDisplayMode;
+          if (durationDisplayMode === 'TC') {
+            elDurMain.textContent = formatSecondsToTimecode(totalDurationSec);
+            elDurSub.innerHTML = `<span>${formatSecondsToHMin(totalDurationSec)}</span><span class="text-[9px] text-film-muted/60">⟳ Alternar</span>`;
+          } else if (durationDisplayMode === 'HMIN') {
+            elDurMain.textContent = formatSecondsToHMin(totalDurationSec);
+            elDurSub.innerHTML = `<span>${totalDurationSec.toFixed(1)}s totais</span><span class="text-[9px] text-film-muted/60">⟳ Alternar</span>`;
+          } else {
+            elDurMain.textContent = `${totalDurationSec.toFixed(1)}s`;
+            elDurSub.innerHTML = `<span>${formatSecondsToTimecode(totalDurationSec)}</span><span class="text-[9px] text-film-muted/60">⟳ Alternar</span>`;
+          }
+        }
+
+        // Rodapé de status
+        const elFooterPlans = document.getElementById('status-total-plans');
+        const elFooterTime = document.getElementById('status-total-time');
+        const elFooterTimecode = document.getElementById('status-timecode');
+        if (elFooterPlans) elFooterPlans.textContent = `${totalShots} ${totalShots === 1 ? 'PLANO' : 'PLANOS'}`;
+        if (elFooterTime) elFooterTime.textContent = formatSecondsToHMin(totalDurationSec);
+        if (elFooterTimecode) elFooterTimecode.textContent = `${formatSecondsToTimecode(totalDurationSec)}:00`;
+
+        // Resumo do Filtro
+        const elSummary = document.getElementById('filter-summary-count');
+        if (elSummary) {
+          const visibleRows = appState.rows.filter(r => currentSceneFilter === 'TODAS' || r.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
+          const visibleDur = visibleRows.reduce((a, b) => a + (parseFloat(b.duracao) || 0), 0);
+          elSummary.textContent = `${visibleRows.length}/${totalShots} planos · duração: ${formatSecondsToHMin(visibleDur)}`;
+        }
+      }
+
+      // ─── CHIPS DE FILTRO POR CENA ───
+      function renderSceneChips() {
+        const container = document.getElementById('scene-chips-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        // Contabiliza cenas
+        const sceneCounts = {};
+        appState.rows.forEach(r => {
+          const c = (r.cena || 'SEM CENA').trim().toUpperCase();
+          sceneCounts[c] = (sceneCounts[c] || 0) + 1;
+        });
+
+        // Chip "TODAS AS CENAS"
+        const btnAll = document.createElement('button');
+        const isAllActive = currentSceneFilter === 'TODAS';
+        btnAll.className = `text-xs px-3 py-1 rounded font-mono uppercase transition-all cursor-pointer ${
+          isAllActive ? 'bg-white/10 border border-[#ffb454] text-[#ffb454] font-bold shadow' : 'bg-[#131519] border border-white/10 text-[#5d636b] hover:text-[#e9e5da]'
+        }`;
+        btnAll.textContent = `TODAS AS CENAS (${appState.rows.length})`;
+        btnAll.onclick = () => {
+          currentSceneFilter = 'TODAS';
+          renderTable();
+        };
+        container.appendChild(btnAll);
+
+        // Chips das cenas individuais
+        Object.keys(sceneCounts).sort().forEach(sceneName => {
+          const count = sceneCounts[sceneName];
+          const isActive = currentSceneFilter === sceneName;
+          const btn = document.createElement('button');
+          btn.className = `text-xs px-3 py-1 rounded font-mono uppercase transition-all cursor-pointer flex items-center gap-1.5 ${
+            isActive ? 'bg-white/10 border border-[#5ad0dd] text-[#5ad0dd] font-bold shadow' : 'bg-[#131519] border border-white/10 text-[#5d636b] hover:text-[#e9e5da]'
+          }`;
+          btn.innerHTML = `<span>${sceneName}</span><span class="text-[9px] opacity-75">(${count})</span>`;
+          btn.onclick = () => {
+            currentSceneFilter = isActive ? 'TODAS' : sceneName;
+            renderTable();
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      // ─── AÇÕES DE LINHA: ADICIONAR, DUPLICAR, EXCLUIR ───
+      function addNewShot(focusNew = true) {
+        const lastRow = appState.rows[appState.rows.length - 1];
+        const newScene = lastRow ? lastRow.cena : 'CENA 01';
+        const newLoc = lastRow ? lastRow.locacao : '';
+
+        const newRow = {
+          id: 'row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+          plano: 'Plano Médio (PM)',
+          angulo: 'Frontal (Normal)',
+          movimento: 'Fixo (Estático)',
+          cena: newScene,
+          descricao: '',
+          locacao: newLoc,
+          luz: 'Natural Dia (Direta)',
+          duracao: 3.0,
+          trilha: '',
+          thumb: ''
+        };
+
+        appState.rows.push(newRow);
+        triggerAutosave();
+        renderTable();
+
+        // Animação de Flash na Nova Linha
+        const trs = document.querySelectorAll('.film-row');
+        const lastTr = trs[trs.length - 1];
+        if (lastTr) {
+          lastTr.classList.add('animate-flash');
+          if (focusNew) {
+            const desc = lastTr.querySelector('textarea');
+            if (desc) desc.focus();
+          }
+          lastTr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        showToast('Novo plano criado!', 'info');
+      }
+
+      function duplicateRow(index) {
+        const original = appState.rows[index];
+        if (!original) return;
+
+        const clone = JSON.parse(JSON.stringify(original));
+        clone.id = 'row_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        clone.descricao = clone.descricao ? `${clone.descricao} (continuação)` : '';
+
+        appState.rows.splice(index + 1, 0, clone);
+        triggerAutosave();
+        renderTable();
+
+        const trs = document.querySelectorAll('.film-row');
+        const dupTr = trs[index + 1];
+        if (dupTr) {
+          dupTr.classList.add('animate-flash');
+          dupTr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        showToast(`Plano duplicado com sucesso!`, 'success');
+      }
+
+      function deleteRow(index) {
+        const deleted = appState.rows[index];
+        if (!deleted) return;
+
+        appState.rows.splice(index, 1);
+        triggerAutosave();
+        renderTable();
+
+        // Pilha de Desfazer
+        undoStack.push({ item: deleted, index });
+        showToast(`Plano ${String(index + 1).padStart(3, '0')} excluído.`, 'info', {
+          label: 'Desfazer',
+          callback: () => {
+            const last = undoStack.pop();
+            if (last) {
+              appState.rows.splice(last.index, 0, last.item);
+              triggerAutosave();
+              renderTable();
+              showToast('Exclusão desfeita!', 'success');
+            }
+          }
+        });
+      }
+
+      // ─── UPLOAD DE STORYBOARD ───
+      function requestImageUpload(rowId) {
+        activeImageUploadRowId = rowId;
+        const input = document.getElementById('global-image-input');
+        if (input) {
+          input.value = '';
+          input.click();
+        }
+      }
+
+      // ─── LIGHTBOX FULLSCREEN ───
+      function openLightbox(row, shotNumber) {
+        const modal = document.getElementById('lightbox-modal');
+        const img = document.getElementById('lightbox-img');
+        const titleNum = document.getElementById('lightbox-shot-num');
+        const scene = document.getElementById('lightbox-scene-name');
+        const loc = document.getElementById('lightbox-location');
+        const desc = document.getElementById('lightbox-description');
+
+        if (!modal || !img) return;
+
+        img.src = row.thumb;
+        titleNum.textContent = `PLANO ${shotNumber}`;
+        scene.textContent = row.cena || 'CENA --';
+        loc.textContent = row.locacao || 'LOCAÇÃO INDEFINIDA';
+        desc.textContent = row.descricao || 'Sem descrição cadastrada.';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      function closeLightbox() {
+        const modal = document.getElementById('lightbox-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+      }
+
+      // ─── EXPORTAÇÃO CSV (EXCEL BR COM BOM E ;) ───
+      function exportCSV() {
+        const totalDurationSec = appState.rows.reduce((acc, r) => acc + (parseFloat(r.duracao) || 0), 0);
+        const projectTitle = appState.meta.titulo || 'DECUPAGEM';
+        const projectDate = appState.meta.data || '';
+
+        const headers = [
+          'Nº',
+          'Storyboard',
+          'Plano',
+          'Ângulo',
+          'Movimento',
+          'Cena',
+          'Descrição',
+          'Locação',
+          'Iluminação',
+          'Duração (s)',
+          'Duração (h:m:s)',
+          'Trilha Sonora / Áudio'
+        ];
+
+        const escapeCSV = (str) => {
+          if (str === null || str === undefined) return '""';
+          const s = String(str).replace(/"/g, '""');
+          return `"${s}"`;
+        };
+
+        const lines = [];
+        // Metadados do Projeto no Cabeçalho
+        lines.push(`PROJETO:;${escapeCSV(projectTitle)};DATA:;${escapeCSV(projectDate)}`);
+        lines.push('');
+        lines.push(headers.map(escapeCSV).join(';'));
+
+        appState.rows.forEach((r, idx) => {
+          const num = String(idx + 1).padStart(3, '0');
+          const hasImage = r.thumb ? '(imagem)' : 'sem foto';
+          const durSec = parseFloat(r.duracao) || 0;
+          const durTC = formatSecondsToTimecode(durSec);
+
+          const rowData = [
+            num,
+            hasImage,
+            r.plano,
+            r.angulo,
+            r.movimento,
+            r.cena,
+            r.descricao,
+            r.locacao,
+            r.luz,
+            durSec.toString().replace('.', ','),
+            durTC,
+            r.trilha
+          ];
+          lines.push(rowData.map(escapeCSV).join(';'));
+        });
+
+        // Linha Final de Resumo
+        lines.push('');
+        lines.push(`TOTAL PLANOS:;${appState.rows.length};;;;;;DURAÇÃO TOTAL:;${totalDurationSec.toString().replace('.', ',')};${formatSecondsToTimecode(totalDurationSec)} (${formatSecondsToHMin(totalDurationSec)});`);
+
+        // Adiciona UTF-8 BOM (\uFEFF) para compatibilidade perfeita com Microsoft Excel
+        const csvContent = '\uFEFF' + lines.join('\r\n');
+        return csvContent;
+      }
+
+      function downloadCSV() {
+        const csv = exportCSV();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const filename = (appState.meta.titulo || 'shotlist').toLowerCase().replace(/\s+/g, '_') + '_decupagem.csv';
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('CSV exportado com sucesso!', 'success');
+      }
+
+      function copyCSVToClipboard() {
+        const csv = exportCSV();
+        navigator.clipboard.writeText(csv).then(() => {
+          showToast('CSV copiado para a área de transferência!', 'success');
+        }).catch(() => {
+          showToast('Falha ao copiar CSV.', 'error');
+        });
+      }
+
+      // ─── EXPORTAÇÃO DIRETA DE PDF CINEMATOGRÁFICO COM jsPDF & STORYBOARDS ───
+      async function ensureJsPDFLoaded() {
+        if (window.jspdf && window.jspdf.jsPDF && (typeof window.jspdf.jsPDF.prototype.autoTable === 'function' || typeof window.jspdf.autoTable === 'function')) {
+          return true;
+        }
+
+        return new Promise((resolve) => {
+          let checkCount = 0;
+          const interval = setInterval(() => {
+            checkCount++;
+            if (window.jspdf && window.jspdf.jsPDF) {
+              clearInterval(interval);
+              resolve(true);
+            } else if (checkCount > 30) {
+              clearInterval(interval);
+              // Tenta carregar sob demanda se o CDN falhou
+              const s1 = document.createElement('script');
+              s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+              s1.onload = () => {
+                const s2 = document.createElement('script');
+                s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+                s2.onload = () => resolve(true);
+                s2.onerror = () => resolve(false);
+                document.head.appendChild(s2);
+              };
+              s1.onerror = () => resolve(false);
+              document.head.appendChild(s1);
+            }
+          }, 100);
+        });
+      }
+
+      async function exportCinematicPDF() {
+        showToast('Preparando PDF cinematográfico com storyboards...', 'info');
+
+        const isLoaded = await ensureJsPDFLoaded();
+        if (!isLoaded || !window.jspdf || !window.jspdf.jsPDF) {
+          showToast('Não foi possível inicializar o jsPDF. Verifique sua conexão de rede.', 'error');
+          return;
+        }
+
+        try {
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+            compress: true
+          });
+
+          const projectTitle = (appState.meta.titulo || 'O ÚLTIMO FRAME').toUpperCase();
+          const projectDate = appState.meta.data || new Date().toISOString().split('T')[0];
+          const totalShots = appState.rows.length;
+          const uniqueScenes = new Set(appState.rows.map(r => r.cena.trim().toUpperCase()).filter(Boolean)).size;
+          const totalDurationSec = appState.rows.reduce((acc, r) => acc + (parseFloat(r.duracao) || 0), 0);
+          const times = calculateCumulativeTimecodes();
+
+          // Filtro ativo
+          const query = currentSearchQuery.toLowerCase().trim();
+          const filteredRows = appState.rows.filter(row => {
+            const matchScene = (currentSceneFilter === 'TODAS') || (row.cena.trim().toUpperCase() === currentSceneFilter.toUpperCase());
+            if (!matchScene) return false;
+            if (!query) return true;
+            const hay = `${row.cena} ${row.descricao} ${row.locacao} ${row.plano} ${row.angulo} ${row.movimento} ${row.trilha} ${row.luz}`.toLowerCase();
+            return hay.includes(query);
+          });
+
+          if (filteredRows.length === 0) {
+            showToast('Nenhum plano para exportar com os filtros atuais.', 'error');
+            return;
+          }
+
+          // ── CABEÇALHO CINEMATOGRÁFICO NA PRIMEIRA PÁGINA (CLAQUETE & SLATE) ──
+          // Faixa de claquete superior com listras diagonais pretas e âmbar
+          const stripeWidth = 12;
+          const stripeHeight = 4.5;
+          for (let x = 0; x < 297; x += stripeWidth) {
+            const isAmber = Math.floor(x / stripeWidth) % 2 === 0;
+            doc.setFillColor(isAmber ? 255 : 14, isAmber ? 180 : 16, isAmber ? 84 : 19);
+            doc.rect(x, 0, stripeWidth, stripeHeight, 'F');
+          }
+
+          // Linha de acento âmbar
+          doc.setFillColor(255, 180, 84);
+          doc.rect(0, stripeHeight, 297, 0.6, 'F');
+
+          // Bloco principal de slate técnico
+          doc.setFillColor(19, 21, 25); // #131519
+          doc.rect(10, 7, 277, 24, 'F');
+
+          // Borda do Slate
+          doc.setDrawColor(45, 49, 56);
+          doc.setLineWidth(0.3);
+          doc.rect(10, 7, 277, 24, 'S');
+
+          // Borda de acento âmbar à esquerda
+          doc.setFillColor(255, 180, 84);
+          doc.rect(10, 7, 2.5, 24, 'F');
+
+          // Título do Projeto (Grande, estilo clapperboard)
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(16);
+          doc.setTextColor(255, 180, 84); // #ffb454
+          doc.text(projectTitle, 16, 16);
+
+          // Subtítulo técnico
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(90, 208, 221); // #5ad0dd
+          const filterInfo = currentSceneFilter !== 'TODAS' ? ` | FILTRO: ${currentSceneFilter}` : ' | TODOS OS PLANOS';
+          doc.text(`PLANILHA DE DECUPAGEM & SHOT LIST // PRODUÇÃO CINEMATOGRÁFICA${filterInfo}`, 16, 22);
+
+          // Metadados técnicos do lado direito
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7.5);
+          doc.setTextColor(150, 155, 165);
+          doc.text('DATA:', 180, 14);
+          doc.text('PLANOS:', 180, 19);
+          doc.text('CENAS:', 180, 24);
+
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(233, 229, 218); // #e9e5da
+          doc.text(projectDate, 202, 14);
+          doc.text(`${filteredRows.length} de ${totalShots}`, 202, 19);
+          doc.text(`${uniqueScenes}`, 202, 24);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(150, 155, 165);
+          doc.text('DURAÇÃO TOTAL:', 228, 14);
+          doc.text('STATUS:', 228, 24);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(255, 180, 84);
+          doc.text(`${formatSecondsToTimecode(totalDurationSec)} (${formatSecondsToHMin(totalDurationSec)})`, 228, 19);
+
+          doc.setTextColor(255, 90, 78);
+          doc.text('● REC / FINAL CUT', 246, 24);
+
+          // ── MONTAGEM DAS LINHAS DA TABELA ──
+          const head = [
+            ['Nº', 'STORYBOARD', 'LINGUAGEM / CÂMERA', 'CENA', 'DESCRIÇÃO DA CENA & AÇÃO', 'LOCAÇÃO', 'LUZ', 'DURAÇÃO / TC', 'TRILHA / ÁUDIO']
+          ];
+
+          const body = filteredRows.map((row) => {
+            const origIndex = appState.rows.findIndex(r => r.id === row.id);
+            const timeData = times[origIndex] || { inTC: '00:00:00', outTC: '00:00:00' };
+            const shotNumber = String(origIndex + 1).padStart(3, '0');
+
+            const cameraText = [
+              `PLAN: ${row.plano || '—'}`,
+              `ÂNG:  ${row.angulo || '—'}`,
+              `MOV:  ${row.movimento || '—'}`
+            ].join('\n');
+
+            const durText = [
+              `${parseFloat(row.duracao || 0).toFixed(1)}s`,
+              `IN  ${timeData.inTC}`,
+              `OUT ${timeData.outTC}`
+            ].join('\n');
+
+            const rowItem = [
+              shotNumber,
+              '', // Célula de Storyboard renderizada graficamente via didDrawCell
+              cameraText,
+              row.cena || 'CENA 01',
+              row.descricao || '—',
+              row.locacao || '—',
+              row.luz || '—',
+              durText,
+              row.trilha || '—'
+            ];
+
+            // Anexa a imagem para a renderização da célula correspondente
+            rowItem._thumb = row.thumb;
+            return rowItem;
+          });
+
+          const tableOptions = {
+            startY: 34,
+            head: head,
+            body: body,
+            margin: { left: 10, right: 10, top: 10, bottom: 12 },
+            theme: 'plain',
+            styles: {
+              font: 'helvetica',
+              fontSize: 7,
+              cellPadding: { top: 2.5, right: 2, bottom: 2.5, left: 2 },
+              textColor: [233, 229, 218], // #e9e5da
+              fillColor: [19, 21, 25],     // #131519
+              lineColor: [35, 38, 45],     // borda técnica sutil
+              lineWidth: 0.15,
+              valign: 'middle',
+              overflow: 'linebreak'
+            },
+            headStyles: {
+              fillColor: [10, 12, 15],     // #0a0c0f
+              textColor: [255, 180, 84],   // #ffb454 âmbar
+              fontStyle: 'bold',
+              fontSize: 7,
+              halign: 'left',
+              lineWidth: 0.25,
+              lineColor: [255, 180, 84]
+            },
+            alternateRowStyles: {
+              fillColor: [24, 27, 33]      // #181b21
+            },
+            columnStyles: {
+              0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [255, 180, 84] }, // Nº
+              1: { cellWidth: 26, halign: 'center', minCellHeight: 18 },                             // Storyboard
+              2: { cellWidth: 38, fontSize: 6.5 },                                                    // Câmera
+              3: { cellWidth: 18, fontStyle: 'bold', textColor: [90, 208, 221] },                   // Cena
+              4: { cellWidth: 70, fontSize: 7 },                                                      // Descrição
+              5: { cellWidth: 32, fontSize: 6.5 },                                                    // Locação
+              6: { cellWidth: 26, fontSize: 6.5 },                                                    // Luz
+              7: { cellWidth: 27, halign: 'right', fontStyle: 'bold', textColor: [255, 180, 84], fontSize: 6.5 }, // Duração / TC
+              8: { cellWidth: 28, fontSize: 6.5 }                                                     // Trilha
+            },
+            didDrawCell: function(data) {
+              if (data.column.index === 1 && data.cell.section === 'body') {
+                const rowRaw = data.row.raw;
+                const thumb = rowRaw ? rowRaw._thumb : null;
+                const cell = data.cell;
+
+                if (thumb && typeof thumb === 'string' && thumb.startsWith('data:image')) {
+                  try {
+                    const imgW = 22;
+                    const imgH = 13.2; // Proporção ~16:9 cinematográfica
+                    const imgX = cell.x + (cell.width - imgW) / 2;
+                    const imgY = cell.y + (cell.height - imgH) / 2;
+
+                    // Moldura de claquete ao redor da imagem
+                    doc.setDrawColor(255, 180, 84); // Borda âmbar
+                    doc.setLineWidth(0.3);
+                    doc.rect(imgX - 0.4, imgY - 0.4, imgW + 0.8, imgH + 0.8, 'S');
+
+                    doc.addImage(thumb, 'JPEG', imgX, imgY, imgW, imgH, undefined, 'FAST');
+                  } catch (err) {
+                    console.warn('Erro ao inserir thumbnail no PDF:', err);
+                  }
+                } else {
+                  // Placeholder de Storyboard
+                  const boxW = 20;
+                  const boxH = 11;
+                  const boxX = cell.x + (cell.width - boxW) / 2;
+                  const boxY = cell.y + (cell.height - boxH) / 2;
+
+                  doc.setDrawColor(50, 54, 62);
+                  doc.setFillColor(14, 16, 19);
+                  doc.setLineWidth(0.2);
+                  doc.rect(boxX, boxY, boxW, boxH, 'FD');
+
+                  doc.setFont('helvetica', 'normal');
+                  doc.setFontSize(5.5);
+                  doc.setTextColor(93, 99, 107);
+                  doc.text('SEM FRAME', cell.x + cell.width / 2, cell.y + cell.height / 2 + 1, { align: 'center' });
+                }
+              }
+            },
+            didDrawPage: function(data) {
+              const pageCount = doc.internal.getNumberOfPages();
+              const pageCurrent = data.pageNumber;
+              const pageH = doc.internal.pageSize.height; // 210
+              const pageW = doc.internal.pageSize.width;   // 297
+
+              // Barra técnica inferior
+              doc.setDrawColor(45, 49, 56);
+              doc.setLineWidth(0.25);
+              doc.line(10, pageH - 9, pageW - 10, pageH - 9);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(6.5);
+              doc.setTextColor(255, 90, 78); // REC Red
+              doc.text('● REC', 10, pageH - 5);
+
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(110, 115, 125);
+              doc.text(`CINE SLATE SYSTEM // ${projectTitle} // DECUPAGEM`, 24, pageH - 5);
+
+              doc.setTextColor(90, 208, 221);
+              doc.text(`TC TOTAL: ${formatSecondsToTimecode(totalDurationSec)}`, 160, pageH - 5);
+
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(255, 180, 84);
+              doc.text(`PÁGINA ${pageCurrent} DE ${pageCount}`, pageW - 10, pageH - 5, { align: 'right' });
+            }
+          };
+
+          if (typeof doc.autoTable === 'function') {
+            doc.autoTable(tableOptions);
+          } else if (typeof window.jspdf.autoTable === 'function') {
+            window.jspdf.autoTable(doc, tableOptions);
+          } else {
+            throw new Error('Plugin jsPDF-AutoTable não foi carregado corretamente.');
+          }
+
+          // Salva o arquivo PDF estilizado
+          const safeTitle = (appState.meta.titulo || 'decupagem').toLowerCase().replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_');
+          const filename = `${safeTitle}_shotlist_storyboard.pdf`;
+          doc.save(filename);
+          showToast(`PDF "${filename}" gerado com sucesso!`, 'success');
+        } catch (err) {
+          console.error('Erro na exportação de PDF:', err);
+          showToast(`Erro ao gerar PDF: ${err.message}`, 'error');
+        }
+      }
+
+      // ─── EXPORTAÇÃO E IMPORTAÇÃO JSON ───
+      function downloadJSON() {
+        const dataStr = JSON.stringify(appState, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        const filename = (appState.meta.titulo || 'shotlist').toLowerCase().replace(/\s+/g, '_') + '_backup.json';
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        showToast('Backup JSON baixado!', 'success');
+      }
+
+      function importJSON(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const imported = JSON.parse(e.target.result);
+            if (!imported || !Array.isArray(imported.rows)) {
+              throw new Error('Formato de arquivo inválido');
+            }
+            // Sanitização básica
+            appState.meta = {
+              titulo: imported.meta?.titulo || 'PROJETO IMPORTADO',
+              data: imported.meta?.data || new Date().toISOString().split('T')[0]
+            };
+            appState.rows = imported.rows.map((r, i) => ({
+              id: r.id || 'row_imp_' + i + '_' + Date.now(),
+              plano: r.plano || OPTIONS_PLANO[0],
+              angulo: r.angulo || OPTIONS_ANGULO[0],
+              movimento: r.movimento || OPTIONS_MOVIMENTO[0],
+              cena: r.cena || 'CENA 01',
+              descricao: r.descricao || '',
+              locacao: r.locacao || '',
+              luz: r.luz || OPTIONS_LUZ[0],
+              duracao: parseFloat(r.duracao) || 3.0,
+              trilha: r.trilha || '',
+              thumb: r.thumb || ''
+            }));
+
+            // Atualiza campos de cabeçalho
+            const titleInput = document.getElementById('project-title-input');
+            const dateInput = document.getElementById('project-date-input');
+            if (titleInput) titleInput.value = appState.meta.titulo;
+            if (dateInput) dateInput.value = appState.meta.data;
+            document.title = `${appState.meta.titulo} — Planilha de Decupagem`;
+
+            triggerAutosave();
+            renderTable();
+            showToast('Decupagem importada com sucesso!', 'success');
+          } catch (err) {
+            console.error(err);
+            showToast('Erro ao importar JSON: arquivo corrompido ou incompatível.', 'error');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // ─── MODAL DE LIMPEZA ───
+      function openClearModal() {
+        const modal = document.getElementById('clear-modal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+      }
+
+      function closeClearModal() {
+        const modal = document.getElementById('clear-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+      }
+
+      function confirmClearAll() {
+        appState.rows = [];
+        triggerAutosave();
+        renderTable();
+        closeClearModal();
+        showToast('Planilha limpa.', 'info');
+      }
+
+      // ─── INICIALIZAÇÃO E EVENTOS GLOBAIS ───
+      window.addEventListener('DOMContentLoaded', () => {
+        loadState();
+
+        // 1. Título do Projeto e Data
+        const titleInput = document.getElementById('project-title-input');
+        const dateInput = document.getElementById('project-date-input');
+
+        if (titleInput) {
+          titleInput.value = appState.meta.titulo || 'O ÚLTIMO METRÔ';
+          document.title = `${titleInput.value} — Planilha de Decupagem`;
+          titleInput.oninput = (e) => {
+            appState.meta.titulo = e.target.value.toUpperCase();
+            document.title = `${appState.meta.titulo || 'Decupagem'} — Shot List`;
+            triggerAutosave();
+          };
+        }
+
+        if (dateInput) {
+          dateInput.value = appState.meta.data || new Date().toISOString().split('T')[0];
+          dateInput.onchange = (e) => {
+            appState.meta.data = e.target.value;
+            triggerAutosave();
+          };
+        }
+
+        // 2. Tile de Duração (Alternar Modos)
+        const durationTile = document.getElementById('stat-duration-tile');
+        if (durationTile) {
+          durationTile.onclick = () => {
+            if (durationDisplayMode === 'TC') durationDisplayMode = 'HMIN';
+            else if (durationDisplayMode === 'HMIN') durationDisplayMode = 'SEG';
+            else durationDisplayMode = 'TC';
+            updateStatTiles();
+          };
+        }
+
+        // 3. Botões da Toolbar
+        document.getElementById('btn-add-shot')?.addEventListener('click', () => addNewShot(true));
+        document.getElementById('btn-empty-add')?.addEventListener('click', () => addNewShot(true));
+
+        document.getElementById('btn-duplicate-last')?.addEventListener('click', () => {
+          if (appState.rows.length > 0) {
+            duplicateRow(appState.rows.length - 1);
+          } else {
+            addNewShot(true);
+          }
+        });
+
+        // 4. Menu Suspenso de Exportação e Botão Direto de PDF
+        document.getElementById('btn-quick-pdf')?.addEventListener('click', exportCinematicPDF);
+        document.getElementById('menu-export-pdf')?.addEventListener('click', exportCinematicPDF);
+
+        const btnExportDropdown = document.getElementById('btn-export-dropdown');
+        const exportMenu = document.getElementById('export-dropdown-menu');
+
+        if (btnExportDropdown && exportMenu) {
+          btnExportDropdown.onclick = (e) => {
+            e.stopPropagation();
+            exportMenu.classList.toggle('hidden');
+          };
+          document.addEventListener('click', () => {
+            exportMenu.classList.add('hidden');
+          });
+        }
+
+        document.getElementById('menu-copy-csv')?.addEventListener('click', copyCSVToClipboard);
+        document.getElementById('menu-download-csv')?.addEventListener('click', downloadCSV);
+        document.getElementById('menu-download-json')?.addEventListener('click', downloadJSON);
+        document.getElementById('menu-print')?.addEventListener('click', () => window.print());
+
+        const jsonFileInput = document.getElementById('json-file-input');
+        document.getElementById('menu-import-json')?.addEventListener('click', () => {
+          if (jsonFileInput) jsonFileInput.click();
+        });
+        jsonFileInput?.addEventListener('change', (e) => {
+          if (e.target.files && e.target.files[0]) {
+            importJSON(e.target.files[0]);
+          }
+        });
+
+        // 5. Busca
+        const searchInput = document.getElementById('search-input');
+        const btnClearSearch = document.getElementById('btn-clear-search');
+        if (searchInput) {
+          searchInput.oninput = (e) => {
+            currentSearchQuery = e.target.value;
+            if (btnClearSearch) {
+              if (currentSearchQuery) btnClearSearch.classList.remove('hidden');
+              else btnClearSearch.classList.add('hidden');
+            }
+            renderTable();
+          };
+        }
+        if (btnClearSearch) {
+          btnClearSearch.onclick = () => {
+            searchInput.value = '';
+            currentSearchQuery = '';
+            btnClearSearch.classList.add('hidden');
+            renderTable();
+            searchInput.focus();
+          };
+        }
+
+        // 6. Modal Limpar
+        document.getElementById('btn-open-clear-modal')?.addEventListener('click', openClearModal);
+        document.getElementById('btn-cancel-clear')?.addEventListener('click', closeClearModal);
+        document.getElementById('btn-confirm-clear')?.addEventListener('click', confirmClearAll);
+
+        // 7. Lightbox
+        document.getElementById('btn-close-lightbox')?.addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-modal')?.addEventListener('click', (e) => {
+          if (e.target.id === 'lightbox-modal') closeLightbox();
+        });
+
+        // 8. Upload de Imagem Global
+        const globalImgInput = document.getElementById('global-image-input');
+        if (globalImgInput) {
+          globalImgInput.onchange = (e) => {
+            if (e.target.files && e.target.files[0] && activeImageUploadRowId) {
+              const targetRow = appState.rows.find(r => r.id === activeImageUploadRowId);
+              if (targetRow) {
+                processImageFile(e.target.files[0], (dataUrl) => {
+                  targetRow.thumb = dataUrl;
+                  triggerAutosave();
+                  renderTable();
+                  showToast('Storyboard atualizado!', 'success');
+                });
+              }
+            }
+          };
+        }
+
+        // 9. Relógio ao Vivo no Rodapé
+        const liveClock = document.getElementById('live-clock');
+        function updateClock() {
+          if (liveClock) {
+            const now = new Date();
+            liveClock.textContent = now.toLocaleTimeString('pt-BR');
+          }
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 10. Atalhos de Teclado Globais
+        window.addEventListener('keydown', (e) => {
+          // Alt+N: Novo Plano
+          if (e.altKey && (e.key === 'n' || e.key === 'N')) {
+            e.preventDefault();
+            addNewShot(true);
+            return;
+          }
+
+          // Ctrl+S / Cmd+S: Salvar
+          if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+              showToast('Decupagem salva no navegador!', 'success');
+            } catch (err) {
+              showToast('Erro ao salvar!', 'error');
+            }
+            return;
+          }
+
+          // ESC: Fecha Modais / Lightbox ou Limpa Filtros
+          if (e.key === 'Escape') {
+            const lightbox = document.getElementById('lightbox-modal');
+            const clearModal = document.getElementById('clear-modal');
+
+            if (lightbox && !lightbox.classList.contains('hidden')) {
+              closeLightbox();
+              return;
+            }
+            if (clearModal && !clearModal.classList.contains('hidden')) {
+              closeClearModal();
+              return;
+            }
+
+            if (currentSearchQuery || currentSceneFilter !== 'TODAS') {
+              currentSearchQuery = '';
+              currentSceneFilter = 'TODAS';
+              if (searchInput) searchInput.value = '';
+              if (btnClearSearch) btnClearSearch.classList.add('hidden');
+              renderTable();
+              showToast('Filtros limpos.', 'info');
+            }
+          }
+        });
+
+        // Renderização Inicial
+        renderTable();
+      });
+
+    })();
+  </script>
+</body>
+</html>

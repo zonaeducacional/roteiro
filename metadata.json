@@ -1,0 +1,6 @@
+{
+  "name": "Planilha de Decupagem",
+  "description": "Planilha de decupagem e shot list para roteiros de filmagem com estética cinematográfica de claquete e sala de edição.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
