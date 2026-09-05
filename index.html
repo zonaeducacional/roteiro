@@ -564,22 +564,6 @@
   <!-- Input Oculto Global para Upload de Storyboard -->
   <input type="file" id="global-image-input" accept="image/*" class="hidden" />
 
-  <!-- Datalist de Sugestões de Locações Cinematográficas -->
-  <datalist id="locacoes-suggestions">
-    <option value="INT. SALA DE ESTAR - DIA"></option>
-    <option value="INT. SALA DE ESTAR - NOITE"></option>
-    <option value="INT. QUARTO - NOITE"></option>
-    <option value="INT. COZINHA - DIA"></option>
-    <option value="INT. ESCRITÓRIO - DIA"></option>
-    <option value="INT. METRÔ - NOITE"></option>
-    <option value="INT. CARRO EM MOVIMENTO - NOITE"></option>
-    <option value="INT. ESTÚDIO - DIA"></option>
-    <option value="EXT. AVENIDA PAULISTA - DIA"></option>
-    <option value="EXT. RUA DESERTA - NOITE"></option>
-    <option value="EXT. PARQUE - TARDE"></option>
-    <option value="EXT. TERRAÇO DO EDIFÍCIO - PÔR DO SOL"></option>
-    <option value="EXT. PRAÇA CENTRAL - DIA"></option>
-  </datalist>
 
   <!-- Container de Toasts (Notificações Flutuantes) -->
   <div id="toast-container" class="fixed bottom-12 right-6 z-50 flex flex-col gap-2 pointer-events-none no-print"></div>
@@ -1287,12 +1271,11 @@
           setTimeout(autoResizeTextarea, 0);
           tdDesc.appendChild(txtDesc);
 
-          // ── 6. LOCAÇÃO (COM DATALIST) ──
+          // ── 6. LOCAÇÃO (TEXTO LIVRE) ──
           const tdLoc = document.createElement('td');
           tdLoc.className = 'py-2 px-3 align-top';
           const inputLoc = document.createElement('input');
           inputLoc.type = 'text';
-          inputLoc.setAttribute('list', 'locacoes-suggestions');
           inputLoc.className = 'sheet-input font-mono text-[11px] px-2 py-1 text-film-text uppercase tracking-tight';
           inputLoc.placeholder = 'INT/EXT. LOCAÇÃO';
           inputLoc.value = row.locacao || '';
